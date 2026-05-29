@@ -33,7 +33,7 @@
 
 Cynasecure Mobile reprend l'intégralité des parcours du site web : catalogue, recherche, souscription d'abonnement, paiement, gestion du compte et back-office administrateur. Aucune logique métier n'est dupliquée : l'application est un client de l'API REST Symfony, au même titre que le site web.
 
-![Accueil](../Captures_mobile/home.png)
+![Accueil](captures_mobile/home.png)
 
 ---
 
@@ -78,13 +78,16 @@ npm install
 
 ## Configuration
 
-L'URL de l'API et la clé publique Stripe sont définies dans `app.json`, section `extra` :
+Copiez `.env.example` en `.env` et remplissez les valeurs :
 
-```json
-"extra": {
-  "apiUrl": "http://VOTRE_IP_LOCALE:8000/api",
-  "stripePublishableKey": "pk_test_xxxxx"
-}
+```bash
+cp .env.example .env
+```
+
+```env
+EXPO_PUBLIC_API_URL=http://VOTRE_IP_LOCALE:8000/api
+EXPO_PUBLIC_STRIPE_KEY=pk_test_xxxxx
+EXPO_PUBLIC_PAYPAL_CLIENT_ID=votre_client_id_paypal
 ```
 
 Récupérer l'IP locale (macOS) :
@@ -194,32 +197,32 @@ mobile/
 ## Captures d'écran
 
 ### Accueil
-![Accueil](../Captures_mobile/home.png)
+![Accueil](captures_mobile/home.png)
 
 ### Catalogue
-![Catalogue](../Captures_mobile/catalogue.png)
+![Catalogue](captures_mobile/catalogue.png)
 
 ### Fiche service
-![Fiche service](../Captures_mobile/service_details.png)
+![Fiche service](captures_mobile/service_details.png)
 
 ### Panier
-![Panier](../Captures_mobile/cart.png)
+![Panier](captures_mobile/cart.png)
 
 ### Tunnel de paiement
-![Checkout](../Captures_mobile/checkout.png)
+![Checkout](captures_mobile/checkout.png)
 
 ### Tableau de bord utilisateur
-![Dashboard utilisateur](../Captures_mobile/dash_user.png)
+![Dashboard utilisateur](captures_mobile/dash_user.png)
 
 ### Profil
-![Profil](../Captures_mobile/profil.png)
+![Profil](captures_mobile/profil.png)
 
 ### Contact et chatbot
-![Contact](../Captures_mobile/contact.png)
-![Chatbot](../Captures_mobile/chatbot.png)
+![Contact](captures_mobile/contact.png)
+![Chatbot](captures_mobile/chatbot.png)
 
 ### Tableau de bord administrateur
-![Dashboard admin](../Captures_mobile/dash_admin.png)
+![Dashboard admin](captures_mobile/dash_admin.png)
 
 ---
 
