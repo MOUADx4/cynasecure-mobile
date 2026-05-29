@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Cynasecure",
+    "slug": "cynasecure-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0B0D",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.cynasecure.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#0B0B0D"
+      },
+      "package": "com.cynasecure.mobile"
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.cynasecure",
+          "enableGooglePay": false
+        }
+      ],
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./src/assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0B0D"
+        }
+      ]
+    ],
+    "scheme": "cynasecure"
+  }
+}
