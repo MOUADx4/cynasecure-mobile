@@ -196,33 +196,24 @@ mobile/
 
 ## Captures d'écran
 
-### Accueil
-![Accueil](captures_mobile/home.png)
+<p align="center">
+  <img src="captures_mobile/home.png" width="220" alt="Accueil" />
+  <img src="captures_mobile/catalogue.png" width="220" alt="Catalogue" />
+  <img src="captures_mobile/service_details.png" width="220" alt="Fiche service" />
+  <img src="captures_mobile/cart.png" width="220" alt="Panier" />
+</p>
 
-### Catalogue
-![Catalogue](captures_mobile/catalogue.png)
+<p align="center">
+  <img src="captures_mobile/checkout.png" width="220" alt="Checkout" />
+  <img src="captures_mobile/dash_user.png" width="220" alt="Dashboard utilisateur" />
+  <img src="captures_mobile/profil.png" width="220" alt="Profil" />
+  <img src="captures_mobile/contact.png" width="220" alt="Contact" />
+</p>
 
-### Fiche service
-![Fiche service](captures_mobile/service_details.png)
-
-### Panier
-![Panier](captures_mobile/cart.png)
-
-### Tunnel de paiement
-![Checkout](captures_mobile/checkout.png)
-
-### Tableau de bord utilisateur
-![Dashboard utilisateur](captures_mobile/dash_user.png)
-
-### Profil
-![Profil](captures_mobile/profil.png)
-
-### Contact et chatbot
-![Contact](captures_mobile/contact.png)
-![Chatbot](captures_mobile/chatbot.png)
-
-### Tableau de bord administrateur
-![Dashboard admin](captures_mobile/dash_admin.png)
+<p align="center">
+  <img src="captures_mobile/chatbot.png" width="220" alt="Chatbot" />
+  <img src="captures_mobile/dash_admin.png" width="220" alt="Dashboard admin" />
+</p>
 
 ---
 
