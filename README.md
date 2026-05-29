@@ -33,7 +33,9 @@
 
 Cynasecure Mobile reprend l'intégralité des parcours du site web : catalogue, recherche, souscription d'abonnement, paiement, gestion du compte et back-office administrateur. Aucune logique métier n'est dupliquée : l'application est un client de l'API REST Symfony, au même titre que le site web.
 
-![Accueil](captures_mobile/home.png)
+<p align="center">
+  <img src="captures_mobile/home.png" width="260" alt="Accueil" />
+</p>
 
 ---
 
