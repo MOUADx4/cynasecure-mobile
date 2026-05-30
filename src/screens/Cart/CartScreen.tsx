@@ -7,6 +7,7 @@ import { ArrowRight, ShoppingCart, Tag, Trash2, X } from 'lucide-react-native';
 
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { useHaptic } from '../../hooks/useHaptic';
 import { useCart } from '../../context/CartContext';
 import { checkoutApi } from '../../api/checkout';
 import { colors, radius, shadows } from '../../theme/colors';
@@ -16,6 +17,7 @@ export function CartScreen() {
   const nav = useNavigation<any>();
   const { items, total, removeFromCart, changeCycle, promo, setPromo } = useCart();
   const insets = useSafeAreaInsets();
+  const { medium } = useHaptic();
   const [promoCode, setPromoCode] = useState('');
   const [promoApplying, setPromoApplying] = useState(false);
 
@@ -73,7 +75,7 @@ export function CartScreen() {
                 <View style={styles.itemHeader}>
                   <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
                   <Pressable
-                    onPress={() => removeFromCart(item.id)}
+                    onPress={() => { medium(); removeFromCart(item.id); }}
                     accessibilityLabel={t('cart.remove')}
                     hitSlop={10}
                   >
@@ -159,7 +161,7 @@ export function CartScreen() {
 
       <Pressable
         style={({ pressed }) => [styles.checkoutBtn, pressed && { opacity: 0.85, transform: [{ scale: 0.98 }] }]}
-        onPress={() => nav.navigate('Checkout')}
+        onPress={() => { medium(); nav.navigate('Checkout'); }}
       >
         <Text style={styles.checkoutText}>{t('cart.checkout')}</Text>
         <ArrowRight color="#fff" size={18} />

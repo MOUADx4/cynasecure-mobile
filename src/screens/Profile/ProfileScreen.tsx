@@ -27,6 +27,7 @@ import {
 
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { FadeInView } from '../../components/ui/FadeInView';
 import { useAuth } from '../../context/AuthContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../../theme/colors';
@@ -64,6 +65,7 @@ export function ProfileScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={[styles.content, { paddingTop: insets.top + 12 }]}>
+      <FadeInView delay={0}>
       {/* Header */}
       <Pressable style={styles.header} onPress={() => nav.navigate('ProfileEdit')}>
         <View style={styles.avatar}>
@@ -144,6 +146,7 @@ export function ProfileScreen() {
         icon={<LogOut color="#fff" size={16} />}
         fullWidth
       />
+      </FadeInView>
     </ScrollView>
   );
 }

@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { FadeInView } from '../../components/ui/FadeInView';
+import { useHaptic } from '../../hooks/useHaptic';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import type { RootScreen } from '../../navigation/types';
@@ -13,6 +15,7 @@ export function LoginScreen({ navigation }: RootScreen<'Login'>) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { login } = useAuth();
+  const { success, error: hapticError } = useHaptic();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,6 +27,7 @@ export function LoginScreen({ navigation }: RootScreen<'Login'>) {
     setLoading(true);
     try {
       const res = await login(email.trim(), password, remember);
+      success();
       if (res.requires2fa) {
         navigation.replace('TwoFactor');
       } else if (res.emailUnverified) {
@@ -32,6 +36,7 @@ export function LoginScreen({ navigation }: RootScreen<'Login'>) {
         navigation.replace('Tabs');
       }
     } catch (e: any) {
+      hapticError();
       toast(e?.message ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
@@ -40,6 +45,7 @@ export function LoginScreen({ navigation }: RootScreen<'Login'>) {
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <FadeInView delay={0}>
       <View style={styles.header}>
         <Image
           source={require('../../assets/adaptive-icon.png')}
@@ -86,6 +92,7 @@ export function LoginScreen({ navigation }: RootScreen<'Login'>) {
         <Text style={styles.footerText}>{t('auth.noAccount')} </Text>
         <Text style={[styles.footerText, styles.link]}>{t('auth.register')}</Text>
       </Pressable>
+      </FadeInView>
     </ScrollView>
   );
 }

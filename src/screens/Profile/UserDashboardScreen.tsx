@@ -26,6 +26,7 @@ import { LineChart } from 'react-native-gifted-charts';
 import { useAuth } from '../../context/AuthContext';
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { paymentsApi, type Payment } from '../../api/payments';
+import { FadeInView } from '../../components/ui/FadeInView';
 import { colors, radius, spacing } from '../../theme/colors';
 import type { RootScreen } from '../../navigation/types';
 
@@ -146,6 +147,7 @@ export function UserDashboardScreen({ navigation }: RootScreen<'UserDashboard'>)
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
       }
     >
+      <FadeInView delay={0}>
       {/* Welcome banner */}
       <View style={st.banner}>
         <View style={st.bannerRow}>
@@ -334,6 +336,7 @@ export function UserDashboardScreen({ navigation }: RootScreen<'UserDashboard'>)
           </View>
         )}
       </View>
+      </FadeInView>
     </ScrollView>
   );
 }

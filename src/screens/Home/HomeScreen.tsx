@@ -14,6 +14,7 @@ import {
 
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ServiceCard } from '../../components/shared/ServiceCard';
+import { FadeInView } from '../../components/ui/FadeInView';
 import { homeApi, type CarouselSlide } from '../../api/home';
 import type { Category, Service } from '../../api/services';
 import { colors, radius, shadows } from '../../theme/colors';
@@ -264,6 +265,7 @@ export function HomeScreen() {
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}
     >
+      <FadeInView delay={0}>
       {/* HERO */}
       <View style={[s.heroWrapper, { paddingTop: insets.top + 8 }]}>
         <HeroBackground />
@@ -435,6 +437,7 @@ export function HomeScreen() {
         </LinearGradient>
       </View>
 
+      </FadeInView>
     </ScrollView>
   );
 }

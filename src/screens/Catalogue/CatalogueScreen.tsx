@@ -7,6 +7,7 @@ import { Search, X, SlidersHorizontal, PackageSearch } from 'lucide-react-native
 
 import { ServiceCard } from '../../components/shared/ServiceCard';
 import { SkeletonCard } from '../../components/ui/Skeleton';
+import { FadeInView } from '../../components/ui/FadeInView';
 import { servicesApi, type Service } from '../../api/services';
 import { colors, radius } from '../../theme/colors';
 
@@ -69,7 +70,7 @@ export function CatalogueScreen() {
   }, [services]);
 
   return (
-    <View style={styles.container}>
+    <FadeInView delay={0} style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.eyebrow}>CATALOGUE</Text>
         <Text style={styles.title}>{t('catalog.title')}</Text>
@@ -194,7 +195,7 @@ export function CatalogueScreen() {
           }
         />
       )}
-    </View>
+    </FadeInView>
   );
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { colors, radius } from '../../theme/colors';
 
 type Props = TextInputProps & {
@@ -10,28 +11,45 @@ type Props = TextInputProps & {
 
 export function Input({ label, error, hint, style, ...rest }: Props) {
   const [focused, setFocused] = useState(false);
+  const borderOpacity = useSharedValue(0);
+
+  const animatedBorderStyle = useAnimatedStyle(() => ({
+    borderColor: `rgba(59, 130, 246, ${borderOpacity.value})`,
+    borderWidth: 1.5,
+    borderRadius: radius.lg,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
+  }));
 
   return (
     <View style={styles.wrapper}>
       {label && <Text style={styles.label}>{label}</Text>}
-      <TextInput
-        placeholderTextColor={colors.textDim}
-        {...rest}
-        onFocus={(e) => {
-          setFocused(true);
-          rest.onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          rest.onBlur?.(e);
-        }}
-        style={[
-          styles.input,
-          focused && styles.focused,
-          error && styles.errored,
-          style,
-        ]}
-      />
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholderTextColor={colors.textDim}
+          {...rest}
+          onFocus={(e) => {
+            setFocused(true);
+            borderOpacity.value = withTiming(1, { duration: 150 });
+            rest.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            borderOpacity.value = withTiming(0, { duration: 150 });
+            rest.onBlur?.(e);
+          }}
+          style={[
+            styles.input,
+            error && styles.errored,
+            style,
+          ]}
+        />
+        {!error && <Animated.View style={animatedBorderStyle} />}
+      </View>
       {error ? (
         <Text style={styles.error}>{error}</Text>
       ) : hint ? (
@@ -50,6 +68,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
+  inputContainer: {
+    position: 'relative',
+  },
   input: {
     backgroundColor: colors.surfaceElevated,
     borderWidth: 1.5,
@@ -59,13 +80,6 @@ const styles = StyleSheet.create({
     height: 52,
     fontSize: 15,
     borderRadius: radius.lg,
-  },
-  focused: {
-    borderColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 0 },
   },
   errored: { borderColor: colors.danger },
   hint: { color: colors.textDim, fontSize: 12 },

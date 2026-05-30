@@ -6,6 +6,7 @@ import { Check, X } from 'lucide-react-native';
 
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { FadeInView } from '../../components/ui/FadeInView';
 import { useAuth } from '../../context/AuthContext';
 import { colors } from '../../theme/colors';
 import type { RootScreen } from '../../navigation/types';
@@ -61,6 +62,7 @@ export function RegisterScreen({ navigation }: RootScreen<'Register'>) {
 
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <FadeInView delay={0}>
       <Text style={styles.title}>{t('auth.registerTitle')}</Text>
 
       <View style={styles.form}>
@@ -103,6 +105,7 @@ export function RegisterScreen({ navigation }: RootScreen<'Register'>) {
         <Text style={styles.footerText}>{t('auth.haveAccount')} </Text>
         <Text style={[styles.footerText, styles.link]}>{t('auth.login')}</Text>
       </Pressable>
+      </FadeInView>
     </ScrollView>
   );
 }

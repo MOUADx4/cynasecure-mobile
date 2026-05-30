@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Home, Grid3x3, ShoppingCart, User, MessageCircle } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useHaptic } from '../hooks/useHaptic';
 
 import { HomeScreen } from '../screens/Home/HomeScreen';
 import { CatalogueScreen } from '../screens/Catalogue/CatalogueScreen';
@@ -17,6 +19,55 @@ import { useCart } from '../context/CartContext';
 import type { TabsParams } from './types';
 
 const Tab = createBottomTabNavigator<TabsParams>();
+
+// TabButton animé avec haptique
+
+interface TabButtonProps {
+  route: { key: string; name: string };
+  focused: boolean;
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
+}
+
+function TabButton({ focused, icon, label, onPress }: TabButtonProps) {
+  const { light } = useHaptic();
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePress = () => {
+    light();
+    scale.value = withSpring(0.9, { damping: 20, stiffness: 400 });
+    setTimeout(() => {
+      scale.value = withSpring(1, { damping: 20, stiffness: 300 });
+    }, 100);
+    onPress();
+  };
+
+  return (
+    <Pressable
+      onPress={handlePress}
+      style={s.tabItem}
+      accessibilityRole="button"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={label}
+    >
+      <Animated.View style={animatedStyle}>
+        <View style={[s.iconFrame, focused && s.iconFrameActive]}>
+          {focused && <View style={s.iconGlow} />}
+          {icon}
+        </View>
+      </Animated.View>
+      <Text style={[s.tabLabel, focused && s.tabLabelActive]} numberOfLines={1}>
+        {label}
+      </Text>
+      {focused && <Animated.View style={s.activeIndicator} />}
+    </Pressable>
+  );
+}
 
 // Badge panier
 
@@ -75,24 +126,14 @@ function DockTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           const label = String(options.title ?? route.name);
 
           return (
-            <Pressable
+            <TabButton
               key={route.key}
+              route={route}
+              focused={focused}
+              icon={icon}
+              label={label}
               onPress={onPress}
-              style={({ pressed }) => [s.tabItem, pressed && s.tabItemPressed]}
-              accessibilityRole="button"
-              accessibilityState={{ selected: focused }}
-              accessibilityLabel={label}
-            >
-              {/* Cadre cristallisé autour de l'icône active */}
-              <View style={[s.iconFrame, focused && s.iconFrameActive]}>
-                {focused && <View style={s.iconGlow} />}
-                {icon}
-              </View>
-
-              <Text style={[s.tabLabel, focused && s.tabLabelActive]} numberOfLines={1}>
-                {label}
-              </Text>
-            </Pressable>
+            />
           );
         })}
       </View>
@@ -155,9 +196,15 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  tabItemPressed: {
-    opacity: 0.75,
-    transform: [{ scale: 0.94 }],
+  activeIndicator: {
+    position: 'absolute',
+    bottom: -4,
+    left: '50%' as unknown as number,
+    marginLeft: -2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.primary,
   },
 
   // Cadre autour de l'icône
