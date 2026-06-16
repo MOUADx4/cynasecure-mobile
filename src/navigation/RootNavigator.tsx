@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ChatbotFAB } from '../components/ui/ChatbotFAB';
 
 import { VerifyEmailChangeScreen } from '../screens/Auth/VerifyEmailChangeScreen';
 
@@ -40,6 +43,9 @@ import { AdminContactScreen } from '../screens/Admin/AdminContactScreen';
 import { AdminPromosScreen } from '../screens/Admin/AdminPromosScreen';
 import { AdminServiceFormScreen } from '../screens/Admin/AdminServiceFormScreen';
 
+// Onboarding
+import { OnboardingScreen } from '../screens/Onboarding/OnboardingScreen';
+
 // Legal
 import { LegalScreen } from '../screens/Legal/LegalScreen';
 
@@ -48,6 +54,15 @@ import { navigationRef } from './navigationRef';
 import type { RootStackParams } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParams>();
+
+function getActiveTabName(state: any): string | null {
+  if (!state) return null;
+  const top = state.routes[state.index];
+  if (top.name !== 'Tabs') return top.name;
+  if (!top.state) return 'Home'; // default tab
+  const idx = top.state.index ?? 0;
+  return top.state.routes[idx]?.name ?? 'Home';
+}
 
 const navTheme = {
   ...DefaultTheme,
@@ -73,8 +88,36 @@ const linking = {
 };
 
 export function RootNavigator() {
+  const [showChatbot, setShowChatbot] = useState(true);
+  const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem('onboarding_done').then(val => {
+      setOnboardingDone(val === 'true');
+    });
+  }, []);
+
+  const handleOnboardingComplete = async (goTo?: 'login' | 'register') => {
+    await AsyncStorage.setItem('onboarding_done', 'true');
+    setOnboardingDone(true);
+    if (goTo) {
+      setTimeout(() => {
+        navigationRef.current?.navigate(goTo === 'login' ? 'Login' : 'Register' as never);
+      }, 100);
+    }
+  };
+
+  if (onboardingDone === null) return null;
+  if (!onboardingDone) return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+
+  const handleStateChange = (state: any) => {
+    const name = getActiveTabName(state);
+    setShowChatbot(name === 'Home' || name === 'Contact');
+  };
+
   return (
-    <NavigationContainer ref={navigationRef} theme={navTheme} linking={linking}>
+    <View style={{ flex: 1 }}>
+    <NavigationContainer ref={navigationRef} theme={navTheme} linking={linking} onStateChange={handleStateChange}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },
@@ -82,6 +125,8 @@ export function RootNavigator() {
           headerTintColor: colors.text,
           headerShadowVisible: false,
           contentStyle: { backgroundColor: colors.background },
+          gestureEnabled: true,
+          fullScreenGestureEnabled: true,
         }}
       >
         <Stack.Screen name="Tabs" component={MainTabs} options={{ headerShown: false }} />
@@ -126,5 +171,7 @@ export function RootNavigator() {
         <Stack.Screen name="Legal" component={LegalScreen} options={{ title: '' }} />
       </Stack.Navigator>
     </NavigationContainer>
+    {showChatbot && <ChatbotFAB />}
+    </View>
   );
 }

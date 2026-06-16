@@ -203,6 +203,10 @@ export function AdminPromosScreen() {
         contentContainerStyle={st.content}
         data={items}
         keyExtractor={p => String(p.id)}
+          removeClippedSubviews
+          maxToRenderPerBatch={5}
+          windowSize={8}
+          initialNumToRender={8}
         ListHeaderComponent={ListHeader}
         ListEmptyComponent={
           loading ? (
@@ -293,6 +297,7 @@ export function AdminPromosScreen() {
                 placeholder="PROMO20"
                 placeholderTextColor={colors.textDim}
                 autoCapitalize="characters"
+                maxLength={50}
               />
               <Pressable style={st.generateBtn} onPress={generate}>
                 <RefreshCw color={colors.primary} size={18} />

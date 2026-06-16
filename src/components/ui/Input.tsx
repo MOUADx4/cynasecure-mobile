@@ -7,15 +7,27 @@ type Props = TextInputProps & {
   label?: string;
   error?: string;
   hint?: string;
+  leftIcon?: React.ReactNode;
 };
 
-export function Input({ label, error, hint, style, ...rest }: Props) {
+export function Input({ label, error, hint, style, leftIcon, ...rest }: Props) {
   const [focused, setFocused] = useState(false);
-  const borderOpacity = useSharedValue(0);
+  const progress = useSharedValue(0);
 
   const animatedBorderStyle = useAnimatedStyle(() => ({
-    borderColor: `rgba(59, 130, 246, ${borderOpacity.value})`,
+    borderColor: `rgba(79, 142, 247, ${progress.value})`,
     borderWidth: 1.5,
+    borderRadius: radius.lg,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
+  }));
+
+  const animatedBgStyle = useAnimatedStyle(() => ({
+    backgroundColor: `rgba(79, 142, 247, ${progress.value * 0.05})`,
     borderRadius: radius.lg,
     position: 'absolute',
     top: 0,
@@ -29,22 +41,25 @@ export function Input({ label, error, hint, style, ...rest }: Props) {
     <View style={styles.wrapper}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.inputContainer}>
+        <Animated.View style={animatedBgStyle} />
+        {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
         <TextInput
           placeholderTextColor={colors.textDim}
           {...rest}
           onFocus={(e) => {
             setFocused(true);
-            borderOpacity.value = withTiming(1, { duration: 150 });
+            progress.value = withTiming(1, { duration: 180 });
             rest.onFocus?.(e);
           }}
           onBlur={(e) => {
             setFocused(false);
-            borderOpacity.value = withTiming(0, { duration: 150 });
+            progress.value = withTiming(0, { duration: 180 });
             rest.onBlur?.(e);
           }}
           style={[
             styles.input,
-            error && styles.errored,
+            leftIcon ? styles.inputWithIcon : undefined,
+            error ? styles.errored : undefined,
             style,
           ]}
         />
@@ -60,18 +75,26 @@ export function Input({ label, error, hint, style, ...rest }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 6 },
+  wrapper: { gap: 7 },
   label: {
     color: colors.textMuted,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
   },
   inputContainer: {
     position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  leftIcon: {
+    position: 'absolute',
+    left: 16,
+    zIndex: 1,
   },
   input: {
+    flex: 1,
     backgroundColor: colors.surfaceElevated,
     borderWidth: 1.5,
     borderColor: colors.border,
@@ -80,6 +103,9 @@ const styles = StyleSheet.create({
     height: 52,
     fontSize: 15,
     borderRadius: radius.lg,
+  },
+  inputWithIcon: {
+    paddingLeft: 46,
   },
   errored: { borderColor: colors.danger },
   hint: { color: colors.textDim, fontSize: 12 },

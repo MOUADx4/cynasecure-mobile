@@ -121,6 +121,10 @@ export function AdminUsersScreen() {
       contentContainerStyle={st.content}
       data={items}
       keyExtractor={u => String(u.id)}
+          removeClippedSubviews
+          maxToRenderPerBatch={5}
+          windowSize={8}
+          initialNumToRender={8}
       ListHeaderComponent={ListHeader}
       ListEmptyComponent={
         loading ? (

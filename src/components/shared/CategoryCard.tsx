@@ -7,7 +7,7 @@ import type { Category } from '../../api/services';
 
 type Props = { category: Category; onPress: () => void };
 
-export function CategoryCard({ category, onPress }: Props) {
+function CategoryCardComponent({ category, onPress }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -50,3 +50,5 @@ const styles = StyleSheet.create({
   name: { color: colors.text, fontSize: 15, fontWeight: '700' },
   desc: { color: colors.textMuted, fontSize: 12, lineHeight: 17 },
 });
+
+export const CategoryCard = React.memo(CategoryCardComponent);

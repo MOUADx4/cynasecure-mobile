@@ -10,6 +10,7 @@ import { Loader } from '../../components/ui/Loader';
 import { ServiceCard } from '../../components/shared/ServiceCard';
 import { servicesApi, type Service } from '../../api/services';
 import { useCart, type BillingCycle } from '../../context/CartContext';
+import { useHaptic } from '../../hooks/useHaptic';
 import { colors, radius } from '../../theme/colors';
 import type { RootScreen } from '../../navigation/types';
 import { getServiceImageSource } from '../../utils/serviceImage';
@@ -18,6 +19,7 @@ export function ServiceDetailsScreen({ route, navigation }: RootScreen<'ServiceD
   const { id } = route.params;
   const { t } = useTranslation();
   const { addToCart, items } = useCart();
+  const { success: hapticSuccess } = useHaptic();
 
   const [service, setService] = useState<Service | null>(null);
   const [similar, setSimilar] = useState<Service[]>([]);
@@ -47,7 +49,7 @@ export function ServiceDetailsScreen({ route, navigation }: RootScreen<'ServiceD
 
   const handleAdd = () => {
     if (inCart) {
-      navigation.navigate('Tabs');
+      navigation.navigate('Tabs', { screen: 'Cart' } as any);
       return;
     }
     addToCart({
@@ -59,6 +61,7 @@ export function ServiceDetailsScreen({ route, navigation }: RootScreen<'ServiceD
       cycle,
       image: service.image,
     });
+    hapticSuccess();
     Alert.alert(t('service.addedToCart'));
   };
 

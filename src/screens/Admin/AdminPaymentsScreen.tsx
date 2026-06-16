@@ -297,6 +297,10 @@ export function AdminPaymentsScreen() {
       contentContainerStyle={st.content}
       data={displayed}
       keyExtractor={p => String(p.id)}
+          removeClippedSubviews
+          maxToRenderPerBatch={5}
+          windowSize={8}
+          initialNumToRender={8}
       renderItem={({ item }) => <PaymentCard item={item} />}
       ListHeaderComponent={ListHeader}
       ListFooterComponent={ListFooter}

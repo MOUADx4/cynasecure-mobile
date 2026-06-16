@@ -27,6 +27,8 @@ import type { NavigationProp } from '@react-navigation/native';
 
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { useToast } from '../../hooks/useToast';
+import { useHaptic } from '../../hooks/useHaptic';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { colors, radius, spacing } from '../../theme/colors';
 import type { RootStackParams } from '../../navigation/types';
 
@@ -82,6 +84,7 @@ function InfoRow({
 // Main screen
 export function MySubscriptionsScreen() {
   const { toast } = useToast();
+  const { light, medium, success: hapticSuccess, error: hapticError } = useHaptic();
   const nav = useNavigation<NavigationProp<RootStackParams>>();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,14 +116,17 @@ export function MySubscriptionsScreen() {
           text: 'Annuler l\'abonnement',
           style: 'destructive',
           onPress: async () => {
+            medium();
             setCancelling(sub.id);
             try {
               await subscriptionsApi.cancel(sub.id);
               setSubs(prev => prev.map(s =>
                 s.id === sub.id ? { ...s, status: 'CANCELLED' as const, endDate: s.nextBillingAt ?? undefined } : s
               ));
+              hapticSuccess();
               toast('Abonnement annulé. Accès conservé jusqu\'à la fin de la période.', 'success');
             } catch (e: any) {
+              hapticError();
               toast(e?.message ?? 'Erreur lors de l\'annulation', 'error');
             } finally {
               setCancelling(null);
@@ -132,14 +138,17 @@ export function MySubscriptionsScreen() {
   };
 
   const handleRenew = async (id: number) => {
+    medium();
     setRenewing(id);
     try {
       await subscriptionsApi.renew(id);
       setSubs(prev => prev.map(s =>
         s.id === id ? { ...s, status: 'ACTIVE' as const, endDate: undefined } : s
       ));
+      hapticSuccess();
       toast('Abonnement réactivé avec succès.', 'success');
     } catch (e: any) {
+      hapticError();
       toast(e?.message ?? 'Erreur lors de la réactivation', 'error');
     } finally {
       setRenewing(null);
@@ -157,14 +166,17 @@ export function MySubscriptionsScreen() {
         {
           text: 'Confirmer',
           onPress: async () => {
+            medium();
             setUpgrading(sub.id);
             try {
               const res = await subscriptionsApi.switchCycle(sub.id, next);
               setSubs(prev => prev.map(s =>
                 s.id === sub.id ? { ...s, cycle: res.cycle as 'monthly' | 'yearly', price: res.price } : s
               ));
+              hapticSuccess();
               toast(`Formule mise à jour : ${label}.`, 'success');
             } catch (e: any) {
+              hapticError();
               toast(e?.message ?? 'Erreur lors du changement', 'error');
             } finally {
               setUpgrading(null);
@@ -176,12 +188,14 @@ export function MySubscriptionsScreen() {
   };
 
   const handleToggleAutoRenew = async (sub: Subscription) => {
+    light();
     setTogglingAutoRenew(sub.id);
     try {
       await subscriptionsApi.toggleAutoRenew(sub.id, !sub.autoRenew);
       setSubs(prev => prev.map(s => s.id === sub.id ? { ...s, autoRenew: !s.autoRenew } : s));
       toast(sub.autoRenew ? 'Renouvellement automatique désactivé.' : 'Renouvellement automatique activé.', 'success');
     } catch (e: any) {
+      hapticError();
       toast(e?.message ?? 'Erreur', 'error');
     } finally {
       setTogglingAutoRenew(null);
@@ -195,9 +209,33 @@ export function MySubscriptionsScreen() {
 
   if (loading) {
     return (
-      <View style={st.loadWrap}>
-        {[1, 2].map(i => <View key={i} style={[st.loadPulse, { marginBottom: 12 }]} />)}
-      </View>
+      <ScrollView style={st.scroll} contentContainerStyle={st.content} showsVerticalScrollIndicator={false}>
+        <View style={{ gap: 8 }}>
+          <Skeleton height={18} width="45%" />
+          <Skeleton height={28} width="68%" />
+          <Skeleton height={13} width="82%" />
+        </View>
+        <View style={st.kpiRow}>
+          <Skeleton height={62} style={{ flex: 1, borderRadius: radius.lg }} />
+          <Skeleton height={62} style={{ flex: 1, borderRadius: radius.lg }} />
+        </View>
+        {[0, 1].map(i => (
+          <View key={i} style={st.subCard}>
+            <View style={st.subTop}>
+              <Skeleton height={40} width={40} borderRadius={radius.md} />
+              <View style={{ flex: 1, gap: 8 }}>
+                <Skeleton height={14} width="65%" />
+                <Skeleton height={20} width="30%" borderRadius={radius.full} />
+              </View>
+            </View>
+            <View style={[st.infoBlock, { gap: 10 }]}>
+              <Skeleton height={12} />
+              <Skeleton height={12} />
+              <Skeleton height={12} width="80%" />
+            </View>
+          </View>
+        ))}
+      </ScrollView>
     );
   }
 
@@ -248,9 +286,19 @@ export function MySubscriptionsScreen() {
       {/* Empty state */}
       {subs.length === 0 && (
         <View style={st.empty}>
-          <Package color={colors.textDim} size={40} strokeWidth={1.5} />
-          <Text style={st.emptyTitle}>Aucun abonnement pour le moment</Text>
-          <Text style={st.emptyHint}>Découvrez nos solutions de cybersécurité</Text>
+          <View style={st.emptyIconWrap}>
+            <Package color={colors.primary} size={28} strokeWidth={1.5} />
+          </View>
+          <Text style={st.emptyEyebrow}>SERVICES ACTIFS</Text>
+          <Text style={st.emptyTitle}>Aucun abonnement actif</Text>
+          <Text style={st.emptyHint}>Protégez votre infrastructure avec nos solutions de cybersécurité managées.</Text>
+          <Pressable
+            style={({ pressed }) => [st.emptyBtn, pressed && { opacity: 0.8 }]}
+            onPress={() => (nav as any).navigate('Catalog')}
+          >
+            <Text style={st.emptyBtnText}>Explorer le catalogue</Text>
+            <ArrowRight color="#fff" size={14} />
+          </Pressable>
         </View>
       )}
 
@@ -394,9 +442,6 @@ const st = StyleSheet.create({
   scroll: { backgroundColor: colors.background },
   content: { padding: spacing.screen, gap: 20, paddingBottom: 48 },
 
-  loadWrap: { flex: 1, backgroundColor: colors.background, padding: spacing.screen },
-  loadPulse: { width: '100%', height: 200, borderRadius: radius.lg, backgroundColor: colors.surface },
-
   // Header
   pageHeader: { gap: 6 },
   eyebrowBadge: {
@@ -442,9 +487,32 @@ const st = StyleSheet.create({
   kpiChipValue: { color: colors.text, fontSize: 17, fontWeight: '800', marginTop: 2 },
 
   // Empty
-  empty: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 48 },
-  emptyTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  emptyHint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
+  empty: { alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 40 },
+  emptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: 'rgba(79,142,247,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(79,142,247,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyEyebrow: { color: colors.primary, fontSize: 10, fontWeight: '700', letterSpacing: 1.6, textTransform: 'uppercase' as const },
+  emptyTitle: { color: colors.text, fontSize: 18, fontWeight: '800' },
+  emptyHint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' as const, lineHeight: 20, maxWidth: 260 },
+  emptyBtn: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 11,
+    borderRadius: radius.lg,
+    marginTop: 4,
+  },
+  emptyBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 
   // Sub card
   subCard: {

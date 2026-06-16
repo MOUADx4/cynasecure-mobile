@@ -10,6 +10,7 @@ import * as Linking from 'expo-linking';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
+import { useHaptic } from '../../hooks/useHaptic';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { checkoutApi } from '../../api/checkout';
@@ -33,6 +34,7 @@ const EMPTY = {
 export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { success: hapticSuccess, error: hapticError } = useHaptic();
   const { isAuthenticated } = useAuth();
   const { items, total, clearCart, promo, setPromo } = useCart();
   const { confirmPayment } = useStripe();
@@ -132,8 +134,10 @@ export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
 
       setResult({ paymentId: res.paymentId, invoiceNumber: res.invoiceNumber, total: res.total });
       clearCart();
+      hapticSuccess();
       setStep('confirmation');
     } catch (e: any) {
+      hapticError();
       toast(e?.message ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
@@ -173,8 +177,10 @@ export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
 
       setResult({ paymentId: res.paymentId, invoiceNumber: res.invoiceNumber, total: res.total });
       clearCart();
+      hapticSuccess();
       setStep('confirmation');
     } catch (e: any) {
+      hapticError();
       toast(e?.message ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
@@ -224,26 +230,26 @@ export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
 
           <View style={styles.row}>
             <View style={styles.flex}>
-              <Input label={t('auth.firstName')} value={form.firstName} onChangeText={(v) => setForm({ ...form, firstName: v })} />
+              <Input label={t('auth.firstName')} value={form.firstName} onChangeText={(v) => setForm({ ...form, firstName: v })} maxLength={100} />
             </View>
             <View style={styles.flex}>
-              <Input label={t('auth.lastName')} value={form.lastName} onChangeText={(v) => setForm({ ...form, lastName: v })} />
+              <Input label={t('auth.lastName')} value={form.lastName} onChangeText={(v) => setForm({ ...form, lastName: v })} maxLength={100} />
             </View>
           </View>
 
-          <Input label="Adresse" value={form.address} onChangeText={(v) => setForm({ ...form, address: v })} />
+          <Input label="Adresse" value={form.address} onChangeText={(v) => setForm({ ...form, address: v })} maxLength={255} />
 
           <View style={styles.row}>
             <View style={styles.flex}>
-              <Input label="Ville" value={form.city} onChangeText={(v) => setForm({ ...form, city: v })} />
+              <Input label="Ville" value={form.city} onChangeText={(v) => setForm({ ...form, city: v })} maxLength={100} />
             </View>
             <View style={styles.flex}>
-              <Input label="Code postal" value={form.zipCode} onChangeText={(v) => setForm({ ...form, zipCode: v })} keyboardType="number-pad" />
+              <Input label="Code postal" value={form.zipCode} onChangeText={(v) => setForm({ ...form, zipCode: v })} keyboardType="number-pad" maxLength={10} />
             </View>
           </View>
 
           <Input label="Pays (code 2 lettres, ex: FR)" value={form.country} onChangeText={(v) => setForm({ ...form, country: v.toUpperCase() })} autoCapitalize="characters" maxLength={2} />
-          <Input label="Téléphone (optionnel)" value={form.phone} onChangeText={(v) => setForm({ ...form, phone: v })} keyboardType="phone-pad" />
+          <Input label="Téléphone (optionnel)" value={form.phone} onChangeText={(v) => setForm({ ...form, phone: v })} keyboardType="phone-pad" maxLength={20} />
 
           <Button
             label={t('common.continue')}
@@ -306,6 +312,7 @@ export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
                 placeholder={t('cart.promo')}
                 placeholderTextColor={colors.textDim}
                 autoCapitalize="characters"
+                maxLength={50}
               />
               <Button
                 label={t('cart.applyPromo')}

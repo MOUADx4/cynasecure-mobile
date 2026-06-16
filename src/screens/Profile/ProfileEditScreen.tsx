@@ -40,8 +40,8 @@ export function ProfileEditScreen({ navigation }: RootScreen<'ProfileEdit'>) {
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>{t('profile.editProfile')}</Text>
 
-      <Input label={t('auth.firstName')} value={firstName} onChangeText={setFirstName} />
-      <Input label={t('auth.lastName')} value={lastName} onChangeText={setLastName} />
+      <Input label={t('auth.firstName')} value={firstName} onChangeText={setFirstName} maxLength={100} />
+      <Input label={t('auth.lastName')} value={lastName} onChangeText={setLastName} maxLength={100} />
       <Input
         label={t('auth.email')}
         value={user?.email ?? ''}
@@ -53,11 +53,13 @@ export function ProfileEditScreen({ navigation }: RootScreen<'ProfileEdit'>) {
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
+        maxLength={20}
       />
       <Input
         label={`${t('profile.company')} (${t('common.optional')})`}
         value={company}
         onChangeText={setCompany}
+        maxLength={150}
       />
 
       <Button label={t('common.save')} onPress={save} loading={loading} fullWidth />

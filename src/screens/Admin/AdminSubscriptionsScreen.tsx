@@ -298,6 +298,10 @@ export function AdminSubscriptionsScreen() {
       contentContainerStyle={st.content}
       data={items}
       keyExtractor={s => String(s.id)}
+          removeClippedSubviews
+          maxToRenderPerBatch={5}
+          windowSize={8}
+          initialNumToRender={8}
       renderItem={({ item }) => <SubCard item={item} onCancel={cancel} />}
       ListHeaderComponent={ListHeader}
       ListFooterComponent={ListFooter}

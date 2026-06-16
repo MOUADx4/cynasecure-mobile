@@ -1,57 +1,58 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  Animated, Image, Pressable, ScrollView, StyleSheet, Text,
+  Image, Pressable, ScrollView, StyleSheet, Text,
   useWindowDimensions, View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
 import {
-  Shield, Activity, Clock, Database,
-  ArrowRight, Zap, Eye, Lock, ChevronRight,
+  Activity, Clock, Database,
+  ArrowRight, Zap, Eye, Lock, Shield, ChevronRight,
 } from 'lucide-react-native';
 
 import { SkeletonCard } from '../../components/ui/Skeleton';
 import { ServiceCard } from '../../components/shared/ServiceCard';
-import { FadeInView } from '../../components/ui/FadeInView';
+import { ScrollReveal } from '../../components/ui/ScrollReveal';
+import { CountUp } from '../../components/ui/CountUp';
 import { homeApi, type CarouselSlide } from '../../api/home';
 import type { Category, Service } from '../../api/services';
 import { colors, radius, shadows } from '../../theme/colors';
 
-// Slides — matched by title keywords (imagePath from API is a backend URL unusable in mobile)
+// Data
+
 const SLIDE_ENTRIES: Array<{ keywords: string[]; image: any }> = [
-  {
-    keywords: ['xdr', 'unifi', 'détect', 'detect', 'protection'],
-    image: require('../../assets/slide_xdr.png'),
-  },
-  {
-    keywords: ['zero trust', 'trust', 'identit', 'accès', 'acces', 'vérif'],
-    image: require('../../assets/slide_zerotrust.png'),
-  },
-  {
-    keywords: ['48', 'déploi', 'deploy', 'rapide', 'infra', 'opérationnel'],
-    image: require('../../assets/slide_deploy48h.png'),
-  },
+  { keywords: ['xdr', 'unifi', 'détect', 'detect', 'protection'], image: require('../../assets/slide_xdr.png') },
+  { keywords: ['zero trust', 'trust', 'identit', 'accès', 'acces', 'vérif'], image: require('../../assets/slide_zerotrust.png') },
+  { keywords: ['48', 'déploi', 'deploy', 'rapide', 'infra', 'opérationnel'], image: require('../../assets/slide_deploy48h.png') },
 ];
 
 function resolveSlideImage(slide: CarouselSlide): any | null {
   const text = `${slide.title} ${slide.subtitle ?? ''}`.toLowerCase();
-  for (const entry of SLIDE_ENTRIES) {
-    if (entry.keywords.some((k) => text.includes(k))) return entry.image;
+  for (const e of SLIDE_ENTRIES) {
+    if (e.keywords.some((k) => text.includes(k))) return e.image;
   }
   return null;
 }
 
-// Categories — matched by slug keywords
 const CAT_IMAGES: Record<string, any> = {
-  edr:     require('../../assets/edr.jpg'),
-  xdr:     require('../../assets/xdr.jpg'),
-  soc:     require('../../assets/soc.jpg'),
-  cloud:   require('../../assets/cloud.jpg'),
+  edr: require('../../assets/edr.jpg'),
+  xdr: require('../../assets/xdr.jpg'),
+  soc: require('../../assets/soc.jpg'),
+  cloud: require('../../assets/cloud.jpg'),
   network: require('../../assets/network.jpg'),
-  iam:     require('../../assets/iam.jpg'),
-  data:    require('../../assets/data.jpg'),
+  iam: require('../../assets/iam.jpg'),
+  data: require('../../assets/data.jpg'),
   support: require('../../assets/support.jpg'),
 };
 
@@ -64,139 +65,92 @@ function resolveCatImage(cat: Category): any | null {
 }
 
 const STATS = [
-  { icon: Shield, value: '500+', label: 'Clients' },
-  { icon: Activity, value: '99,9%', label: 'Disponibilité' },
-  { icon: Clock, value: '14s', label: 'MTTD moyen' },
-  { icon: Database, value: '3,2 Md', label: 'Événements/j' },
+  { to: 500,  suffix: '+',   decimals: 0, label: 'Clients protégés' },
+  { to: 99.9, suffix: '%',   decimals: 1, label: 'Disponibilité' },
+  { to: 14,   suffix: 's',   decimals: 0, label: 'Temps de détection' },
+  { to: 3.2,  suffix: ' Md', decimals: 1, label: 'Événements / jour' },
 ];
 
 const CAPS = [
-  { icon: Zap,      title: 'Détection IA',     desc: 'Comportementale · 99,4% précision' },
-  { icon: Eye,      title: 'XDR unifié',        desc: '6 surfaces, un seul agent' },
-  { icon: Lock,     title: 'En 48h',            desc: 'Déploiement pris en charge' },
-  { icon: Shield,   title: 'Sans engagement',   desc: 'POC 30 jours offert' },
+  { icon: Zap,    title: 'Détection IA',    desc: 'Comportementale · 99,4%' },
+  { icon: Eye,    title: 'XDR unifié',      desc: '6 surfaces · 1 agent' },
+  { icon: Lock,   title: 'Déploiement 48h', desc: 'Prise en charge incluse' },
+  { icon: Shield, title: 'Sans engagement', desc: 'POC 30 jours offert' },
 ];
-
-// Animated hero background
-
-function HeroBackground() {
-  const pulse = useRef(new Animated.Value(0)).current;
-  const drift = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 3200, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 3200, useNativeDriver: true }),
-      ])
-    ).start();
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(drift, { toValue: 1, duration: 5000, useNativeDriver: true }),
-        Animated.timing(drift, { toValue: 0, duration: 5000, useNativeDriver: true }),
-      ])
-    ).start();
-  }, []);
-
-  const scale = pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
-  const scaleB = pulse.interpolate({ inputRange: [0, 1], outputRange: [1.1, 0.92] });
-  const opacity = pulse.interpolate({ inputRange: [0, 1], outputRange: [0.55, 0.85] });
-  const translateY = drift.interpolate({ inputRange: [0, 1], outputRange: [0, -16] });
-
-  return (
-    <>
-      <LinearGradient
-        colors={['rgba(59,130,246,0.22)', 'rgba(59,130,246,0.05)', colors.background]}
-        locations={[0, 0.55, 1]}
-        style={StyleSheet.absoluteFill}
-      />
-      <Animated.View style={[s.orbLarge, { transform: [{ scale }, { translateY }], opacity }]} />
-      <Animated.View style={[s.orbSmall, { transform: [{ scale: scaleB }] }]} />
-      <Animated.View style={[s.orbAccent, { transform: [{ scale: scaleB }, { translateY }] }]} />
-    </>
-  );
-}
 
 // Carousel
 
-function Carousel({
-  slides,
-  onCtaPress,
-}: {
+const SLIDE_GAP = 10;
+
+function Carousel({ slides, width, onCtaPress }: {
   slides: CarouselSlide[];
-  onCtaPress: (slide: CarouselSlide) => void;
+  width: number;
+  onCtaPress: (s: CarouselSlide) => void;
 }) {
-  const { width } = useWindowDimensions();
+  const cardW = width - 48; // 20px padding each side + 8px peek du suivant
   const [current, setCurrent] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
-  const itemW = width - 48;
-  const gap = 12;
 
-  // Auto-advance every 4 s
   useEffect(() => {
     if (slides.length <= 1) return;
     const id = setInterval(() => {
       setCurrent((prev) => {
         const next = (prev + 1) % slides.length;
-        scrollRef.current?.scrollTo({ x: next * (itemW + gap), animated: true });
+        scrollRef.current?.scrollTo({ x: next * (cardW + SLIDE_GAP), animated: true });
         return next;
       });
-    }, 4000);
+    }, 4500);
     return () => clearInterval(id);
-  }, [slides.length, itemW, gap]);
+  }, [slides.length, cardW]);
 
   return (
-    <View style={{ gap: 10 }}>
+    <View>
       <ScrollView
         ref={scrollRef}
         horizontal
-        snapToInterval={itemW + gap}
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={cardW + SLIDE_GAP}
         snapToAlignment="start"
         decelerationRate="fast"
-        showsHorizontalScrollIndicator={false}
         scrollEventThrottle={16}
-        contentContainerStyle={{ paddingHorizontal: 20, gap }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: SLIDE_GAP }}
         onMomentumScrollEnd={(e) =>
-          setCurrent(Math.round(e.nativeEvent.contentOffset.x / (itemW + gap)))
+          setCurrent(Math.round(e.nativeEvent.contentOffset.x / (cardW + SLIDE_GAP)))
         }
       >
         {slides.map((slide) => {
-          const localImg = resolveSlideImage(slide);
+          const img = resolveSlideImage(slide);
           return (
-            <View key={slide.id} style={[s.slide, { width: itemW }]}>
-              {localImg ? (
-                <Image source={localImg} style={StyleSheet.absoluteFill} resizeMode="cover" />
-              ) : (
-                <LinearGradient
-                  colors={[colors.primaryDark, '#0D1B3E']}
-                  style={StyleSheet.absoluteFill}
-                />
-              )}
+            <View key={slide.id} style={[s.slide, { width: cardW }]}>
+              {img
+                ? <Image source={img} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                : <LinearGradient colors={['#0D1B3E', colors.primaryDark]} style={StyleSheet.absoluteFill} />
+              }
               <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.62)']}
-                locations={[0.28, 1]}
-                style={[StyleSheet.absoluteFill, s.slideGrad]}
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+                locations={[0.4, 1]}
+                style={[StyleSheet.absoluteFill, s.slideOverlay]}
               >
                 <Text style={s.slideTitle}>{slide.title}</Text>
                 {slide.subtitle ? <Text style={s.slideSub}>{slide.subtitle}</Text> : null}
-                {slide.ctaLabel ? (
+                {slide.ctaLabel && (
                   <Pressable
-                    style={({ pressed }) => [s.slideCta, pressed && { opacity: 0.75 }]}
+                    style={({ pressed }) => [s.slideCta, pressed && { opacity: 0.8 }]}
                     onPress={() => onCtaPress(slide)}
                   >
                     <Text style={s.slideCtaText}>{slide.ctaLabel}</Text>
                     <ArrowRight color="#fff" size={12} />
                   </Pressable>
-                ) : null}
+                )}
               </LinearGradient>
             </View>
           );
         })}
       </ScrollView>
       {slides.length > 1 && (
-        <View style={s.dots}>
+        <View style={s.slideIndicators}>
           {slides.map((_, i) => (
-            <View key={i} style={[s.dot, i === current && s.dotActive]} />
+            <View key={i} style={[s.slideBar, i === current && s.slideBarActive]} />
           ))}
         </View>
       )}
@@ -206,20 +160,117 @@ function Carousel({
 
 // Section header
 
-function SectionHead({
-  eyebrow, title, onMore,
-}: { eyebrow: string; title: string; onMore?: () => void }) {
+function SectionHead({ label, title, onMore }: { label: string; title: string; onMore?: () => void }) {
   return (
     <View style={s.sectionHead}>
-      <Text style={s.eyebrow}>{eyebrow}</Text>
-      <View style={s.sectionRow}>
+      <View>
+        <Text style={s.sectionLabel}>{label}</Text>
         <Text style={s.sectionTitle}>{title}</Text>
-        {onMore && (
-          <Pressable onPress={onMore} style={s.seeAllBtn} hitSlop={10}>
-            <Text style={s.seeAll}>Tout voir</Text>
-            <ChevronRight color={colors.primary} size={14} />
+      </View>
+      {onMore && (
+        <Pressable onPress={onMore} hitSlop={12} style={s.seeAllBtn}>
+          <Text style={s.seeAllText}>Tout voir</Text>
+          <ChevronRight color={colors.primary} size={13} />
+        </Pressable>
+      )}
+    </View>
+  );
+}
+
+// Featured hero with video background
+
+function FeaturedHero({
+  onTrial,
+  onExplore,
+  insetTop,
+  tagline,
+  subtitle,
+  trial,
+}: {
+  onTrial: () => void;
+  onExplore: () => void;
+  insetTop: number;
+  tagline: string;
+  subtitle: string;
+  trial: string;
+}) {
+  const player = useVideoPlayer(require('../../assets/bg2.mp4'), (p) => {
+    p.loop = true;
+    p.muted = true;
+    p.play();
+  });
+
+  return (
+    <View style={s.featHero}>
+      <VideoView
+        player={player}
+        style={StyleSheet.absoluteFill}
+        contentFit="cover"
+        nativeControls={false}
+      />
+      {/* Voile sombre très léger et uniforme sur toute la vidéo */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.20)' }} />
+      </View>
+      {/* Gradient : sombre haut (logo) + sombre bas (texte) */}
+      <LinearGradient
+        colors={['rgba(0,0,0,0.68)', 'rgba(0,0,0,0.08)', 'rgba(0,0,0,0.08)', 'rgba(8,8,16,0.93)']}
+        locations={[0, 0.28, 0.52, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* Logo + brand name - en haut dans la vidéo */}
+      <View style={[s.featTopBar, { paddingTop: insetTop + 14 }]}>
+        <Image source={require('../../assets/icon.png')} style={s.featLogo} resizeMode="contain" />
+        <Text style={s.featBrand}>CynaSecure</Text>
+      </View>
+
+      {/* Contenu bas : texte + CTA + stats */}
+      <View style={s.featBottom}>
+        {/* Bloc texte */}
+        <View style={s.featTextBlock}>
+          <Text style={s.featEyebrow}>CYBERSECURITY SAAS</Text>
+          <Text style={s.featTitle}>{tagline}</Text>
+          <Text style={s.featSub} numberOfLines={2}>{subtitle}</Text>
+        </View>
+
+        {/* Boutons - même largeur, même alignement */}
+        <View style={s.featBtns}>
+          <Pressable
+            style={({ pressed }) => [s.featBtn, pressed && { opacity: 0.88, transform: [{ scale: 0.98 }] }]}
+            onPress={onTrial}
+          >
+            <Text style={s.featBtnText}>{trial}</Text>
+            <ArrowRight color={colors.primaryDark} size={14} strokeWidth={2.5} />
           </Pressable>
-        )}
+          <Pressable
+            style={({ pressed }) => [s.featLink, pressed && { opacity: 0.6 }]}
+            onPress={onExplore}
+          >
+            <Text style={s.featLinkText}>Voir nos solutions</Text>
+            <ArrowRight color="rgba(255,255,255,0.72)" size={13} strokeWidth={2} />
+          </Pressable>
+        </View>
+
+        {/* Stats - dans la section vidéo, sur une ligne */}
+        <View style={s.featStatsRow}>
+          {STATS.map((stat, i) => (
+            <React.Fragment key={stat.label}>
+              {i > 0 && <View style={s.featStatDiv} />}
+              <View style={s.featStatItem}>
+                <CountUp
+                  to={stat.to}
+                  suffix={stat.suffix}
+                  decimals={stat.decimals}
+                  style={s.featStatVal}
+                  startDelay={500 + i * 110}
+                  duration={1200}
+                />
+                <Text style={s.featStatLabel}>{stat.label}</Text>
+              </View>
+            </React.Fragment>
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -234,534 +285,331 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
 
   const [slides, setSlides] = useState<CarouselSlide[]>([]);
-  const [cats, setCats] = useState<Category[]>([]);
-  const [top, setTop] = useState<Service[]>([]);
+  const [cats, setCats]     = useState<Category[]>([]);
+  const [top, setTop]       = useState<Service[]>([]);
   const [topLoading, setTopLoading] = useState(true);
+
+  // SWR helper: restore from AsyncStorage immediately, refresh from API in background
+  const loadCached = useCallback(<T,>(key: string, setter: (v: T) => void, fetcher: () => Promise<T>, onDone?: () => void) => {
+    AsyncStorage.getItem(key).then((raw) => {
+      if (raw) { try { setter(JSON.parse(raw) as T); } catch {} }
+    });
+    fetcher()
+      .then((data) => {
+        setter(data);
+        AsyncStorage.setItem(key, JSON.stringify(data)).catch(() => {});
+      })
+      .catch(() => {})
+      .finally(() => onDone?.());
+  }, []);
+
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
+
+  // Staggered entrance for top sections
+  const entryOpacity = useSharedValue(0);
+  const entryY = useSharedValue(12);
+  useEffect(() => {
+    entryOpacity.value = withDelay(80, withTiming(1, { duration: 400 }));
+    entryY.value = withDelay(80, withTiming(0, { duration: 400 }));
+  }, []);
+  const entryStyle = useAnimatedStyle(() => ({
+    opacity: entryOpacity.value,
+    transform: [{ translateY: entryY.value }],
+  }));
 
   const handleCtaPress = (slide: CarouselSlide) => {
     const url = slide.ctaUrl ?? '';
-    const serviceMatch = url.match(/services\/(\d+)/);
-    if (serviceMatch) {
-      nav.navigate('ServiceDetails', { id: Number(serviceMatch[1]) });
-    } else if (url.includes('register') || url.includes('poc') || url.includes('trial')) {
-      nav.navigate('Register');
-    } else {
-      nav.navigate('Catalog');
-    }
+    const m = url.match(/services\/(\d+)/);
+    if (m) nav.navigate('ServiceDetails', { id: Number(m[1]) });
+    else if (url.includes('register') || url.includes('poc') || url.includes('trial')) nav.navigate('Register');
+    else nav.navigate('Catalog');
   };
 
   useEffect(() => {
-    homeApi.getCarousel().then(setSlides).catch(() => {});
-    homeApi.getCategories().then(setCats).catch(() => {});
-    homeApi.getTopProducts()
-      .then(setTop).catch(() => {}).finally(() => setTopLoading(false));
-  }, []);
-
-  const capW = (width - 52) / 2;
+    loadCached('@home_carousel', setSlides, homeApi.getCarousel);
+    loadCached('@home_cats', setCats, homeApi.getCategories);
+    loadCached('@home_top', setTop, homeApi.getTopProducts, () => setTopLoading(false));
+  }, [loadCached]);
 
   return (
-    <ScrollView
-      style={s.scroll}
+    <Animated.ScrollView
+      style={s.root}
       contentContainerStyle={s.content}
       showsVerticalScrollIndicator={false}
+      onScroll={scrollHandler}
+      scrollEventThrottle={16}
     >
-      <FadeInView delay={0}>
-      {/* HERO */}
-      <View style={[s.heroWrapper, { paddingTop: insets.top + 8 }]}>
-        <HeroBackground />
-
-        <View style={s.hero}>
-          {/* Logo + brand */}
-          <View style={s.brandRow}>
-            <Image
-              source={require('../../assets/icon.png')}
-              style={s.brandLogo}
-              resizeMode="contain"
-            />
-            <Text style={s.brandName}>CynaSecure</Text>
-          </View>
-
-          <Text style={s.heroTitle}>{t('home.tagline')}</Text>
-          <Text style={s.heroSub}>{t('home.subtitle')}</Text>
-
-          <View style={s.heroActions}>
-            <Pressable
-              style={({ pressed }) => [s.btnPrimary, pressed && s.btnPressed]}
-              onPress={() => nav.navigate('Register')}
-            >
-              <Text style={s.btnPrimaryText}>{t('home.trial')}</Text>
-              <ArrowRight color="#fff" size={16} />
-            </Pressable>
-            <Pressable
-              style={({ pressed }) => [s.btnGhost, pressed && { opacity: 0.7 }]}
-              onPress={() => nav.navigate('Catalog')}
-            >
-              <Text style={s.btnGhostText}>{t('home.explore')}</Text>
-            </Pressable>
-          </View>
-        </View>
-      </View>
-
-      {/* STATS SCROLL */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={s.statsRow}
-      >
-        {STATS.map((stat) => (
-          <View key={stat.label} style={s.statPill}>
-            <stat.icon color={colors.primary} size={15} />
-            <View style={s.statTexts}>
-              <Text style={s.statValue}>{stat.value}</Text>
-              <Text style={s.statLabel}>{stat.label}</Text>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
+      {/* FEATURED HERO plein largeur (vidéo bg, logo, stats dedans) */}
+      <Animated.View style={entryStyle}>
+        <FeaturedHero
+          onTrial={() => nav.navigate('Register')}
+          onExplore={() => nav.navigate('Catalog')}
+          insetTop={insets.top}
+          tagline={t('home.tagline')}
+          subtitle={t('home.subtitle')}
+          trial={t('home.trial')}
+        />
+      </Animated.View>
 
       {/* CAROUSEL */}
-      {slides.length > 0 && <Carousel slides={slides} onCtaPress={handleCtaPress} />}
+      {slides.length > 0 && (
+        <ScrollReveal scrollY={scrollY} delay={0} fromY={24} style={{ marginTop: 44 }}>
+          <View style={s.sectionRow}>
+            <SectionHead label="À LA UNE" title="Actualités" />
+          </View>
+          <View style={{ marginTop: 16 }}>
+            <Carousel slides={slides} width={width} onCtaPress={handleCtaPress} />
+          </View>
+        </ScrollReveal>
+      )}
 
       {/* CAPABILITIES */}
-      <View style={s.section}>
-        <SectionHead eyebrow="POURQUOI CYNASECURE" title={'Six capacités,\nun seul agent'} />
-        <View style={s.capsGrid}>
-          {CAPS.map((cap) => (
-            <View key={cap.title} style={[s.capCard, { width: capW }]}>
-              <View style={s.capIconBg}>
-                <cap.icon color={colors.primary} size={18} />
+      <ScrollReveal scrollY={scrollY} delay={0} fromY={24} style={s.section}>
+        <SectionHead label="POURQUOI CYNASECURE" title="Ce qui nous distingue" />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.capsRow}
+          style={{ marginTop: 16 }}
+        >
+          {CAPS.map((cap, i) => (
+            <ScrollReveal key={cap.title} scrollY={scrollY} delay={i * 60} fromY={16}>
+              <View style={s.capCard}>
+                <View style={s.capIconWrap}>
+                  <cap.icon color={colors.primary} size={18} strokeWidth={1.8} />
+                </View>
+                <Text style={s.capTitle}>{cap.title}</Text>
+                <Text style={s.capDesc}>{cap.desc}</Text>
               </View>
-              <Text style={s.capTitle}>{cap.title}</Text>
-              <Text style={s.capDesc}>{cap.desc}</Text>
-            </View>
+            </ScrollReveal>
           ))}
-        </View>
-      </View>
+        </ScrollView>
+      </ScrollReveal>
 
-      {/* CATÉGORIES */}
+      {/* CATEGORIES */}
       {cats.length > 0 && (
-        <View style={s.sectionNoH}>
-          <View style={s.sectionPad}>
-            <SectionHead
-              eyebrow="DOMAINES DE SÉCURITÉ"
-              title="Nos spécialités"
-              onMore={() => nav.navigate('Catalog')}
-            />
-          </View>
+        <ScrollReveal scrollY={scrollY} delay={0} fromY={24} style={s.section}>
+          <SectionHead label="DOMAINES" title="Nos spécialités" onMore={() => nav.navigate('Catalog')} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={s.catRow}
+            contentContainerStyle={s.catsRow}
+            style={{ marginTop: 16 }}
           >
-            {cats.map((cat) => {
-              const catImg = resolveCatImage(cat);
+            {cats.map((cat, i) => {
+              const img = resolveCatImage(cat);
               return (
-                <Pressable
-                  key={cat.slug}
-                  style={({ pressed }) => [s.catCard, pressed && { opacity: 0.85 }]}
-                  onPress={() => nav.navigate('Catalog')}
-                >
-                  {catImg ? (
-                    <Image
-                      source={catImg}
-                      style={StyleSheet.absoluteFill}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <LinearGradient
-                      colors={['#1E3A6E', '#0D1B3E']}
-                      style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}
-                    >
-                      <Shield color={colors.primary} size={28} strokeWidth={1.5} />
-                    </LinearGradient>
-                  )}
-                  <LinearGradient
-                    colors={['transparent', 'rgba(0,0,0,0.65)']}
-                    locations={[0.4, 1]}
-                    style={[StyleSheet.absoluteFill, s.catOverlay]}
+                <ScrollReveal key={cat.slug} scrollY={scrollY} delay={i * 50} fromY={14}>
+                  <Pressable
+                    style={({ pressed }) => [s.catCard, pressed && { opacity: 0.82 }]}
+                    onPress={() => nav.navigate('Catalog')}
                   >
-                    <Text style={s.catName} numberOfLines={2}>{cat.name}</Text>
-                    <Text style={s.catCount}>{cat.count} service{cat.count !== 1 ? 's' : ''}</Text>
-                  </LinearGradient>
-                </Pressable>
+                    {img
+                      ? <Image source={img} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                      : (
+                        <LinearGradient
+                          colors={['#1A2B50', '#0D1B3E']}
+                          style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]}
+                        >
+                          <Shield color={colors.primary} size={26} strokeWidth={1.5} />
+                        </LinearGradient>
+                      )
+                    }
+                    <LinearGradient
+                      colors={['transparent', 'rgba(0,0,0,0.7)']}
+                      locations={[0.35, 1]}
+                      style={[StyleSheet.absoluteFill, s.catOverlay]}
+                    >
+                      <Text style={s.catName} numberOfLines={2}>{cat.name}</Text>
+                      <Text style={s.catCount}>{cat.count} service{cat.count !== 1 ? 's' : ''}</Text>
+                    </LinearGradient>
+                  </Pressable>
+                </ScrollReveal>
               );
             })}
           </ScrollView>
-        </View>
+        </ScrollReveal>
       )}
 
       {/* TOP PRODUITS */}
-      <View style={s.section}>
-        <SectionHead
-          eyebrow="SOLUTIONS PHARES"
-          title={t('home.topProducts')}
-          onMore={() => nav.navigate('Catalog')}
-        />
-        {topLoading ? (
-          <View style={{ gap: 12 }}>
-            <SkeletonCard />
-            <SkeletonCard />
-          </View>
-        ) : top.length > 0 ? (
-          <View style={{ gap: 12 }}>
-            {top.map((svc) => (
+      <ScrollReveal scrollY={scrollY} delay={0} fromY={24} style={s.section}>
+        <SectionHead label="SOLUTIONS PHARES" title={t('home.topProducts')} onMore={() => nav.navigate('Catalog')} />
+        <View style={{ marginTop: 16, gap: 12 }}>
+          {topLoading ? (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          ) : top.map((svc, i) => (
+            <ScrollReveal key={svc.id} scrollY={scrollY} delay={i * 80} fromY={16}>
               <ServiceCard
-                key={svc.id}
                 service={svc}
                 onPress={() => nav.navigate('ServiceDetails', { id: svc.id })}
               />
-            ))}
+            </ScrollReveal>
+          ))}
+        </View>
+      </ScrollReveal>
+
+      {/* CTA BANNER */}
+      <ScrollReveal scrollY={scrollY} delay={0} fromY={24} style={s.section}>
+        <View style={s.ctaBanner}>
+          <LinearGradient
+            colors={['#1A3A8F', '#1E4BAD', '#2563EB']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[StyleSheet.absoluteFill, { borderRadius: radius.xl }]}
+          />
+          <View style={s.bannerInner}>
+            <Text style={s.bannerLabel}>SANS ENGAGEMENT</Text>
+            <Text style={s.bannerTitle}>Prêt à sécuriser{'\n'}votre infrastructure ?</Text>
+            <Text style={s.bannerSub}>POC de 30 jours · Déploiement pris en charge</Text>
+            <Pressable
+              style={({ pressed }) => [s.bannerBtn, pressed && { opacity: 0.9 }]}
+              onPress={() => nav.navigate('Register')}
+            >
+              <Text style={s.bannerBtnText}>{t('home.trial')}</Text>
+              <ArrowRight color={colors.primaryDark} size={14} strokeWidth={2.5} />
+            </Pressable>
           </View>
-        ) : null}
-      </View>
-
-      {/* BANNIÈRE FINALE */}
-      <View style={s.section}>
-        <LinearGradient
-          colors={['#1D4ED8', '#2563EB', '#3B82F6']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={s.ctaBanner}
-        >
-          <View style={s.ctaOrb} />
-          <Text style={s.ctaEyebrow}>SANS ENGAGEMENT</Text>
-          <Text style={s.ctaTitle}>Évaluez la plateforme{'\n'}sur votre infrastructure</Text>
-          <Text style={s.ctaText}>POC de 30 jours · Déploiement pris en charge</Text>
-          <Pressable
-            style={({ pressed }) => [s.ctaBtn, pressed && { opacity: 0.9 }]}
-            onPress={() => nav.navigate('Register')}
-          >
-            <Text style={s.ctaBtnText}>{t('home.trial')}</Text>
-            <ArrowRight color={colors.primary} size={16} />
-          </Pressable>
-        </LinearGradient>
-      </View>
-
-      </FadeInView>
-    </ScrollView>
+        </View>
+      </ScrollReveal>
+    </Animated.ScrollView>
   );
 }
 
 // Styles
 
 const s = StyleSheet.create({
-  scroll: { backgroundColor: colors.background },
-  content: { paddingBottom: 56 },
+  root: { flex: 1, backgroundColor: colors.background },
+  content: { paddingBottom: 90 },
 
-  // Hero
-  heroWrapper: {
-    overflow: 'hidden',
-    paddingTop: 4,
-    paddingBottom: 48,
+  // Featured hero - pleine largeur, pas de bordure, pas de border-radius
+  featHero: {
+    minHeight: 600,
+    backgroundColor: colors.surfaceHigh,
+    justifyContent: 'space-between',
   },
-  orbLarge: {
-    position: 'absolute',
-    top: -80,
-    right: -60,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(59,130,246,0.12)',
+  featTopBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 22,
   },
-  orbSmall: {
-    position: 'absolute',
-    top: 60,
-    left: -80,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(59,130,246,0.07)',
+  featLogo: { width: 30, height: 30, borderRadius: 7 },
+  featBrand: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  featBottom: { paddingHorizontal: 22, paddingBottom: 0 },
+  featTextBlock: { gap: 10, marginBottom: 32 },
+  featEyebrow: {
+    color: 'rgba(255,255,255,0.5)', fontSize: 9,
+    fontWeight: '700', letterSpacing: 1.8, textTransform: 'uppercase',
   },
-  orbAccent: {
-    position: 'absolute',
-    bottom: -30,
-    right: 40,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(99,102,241,0.08)',
+  featTitle: {
+    color: '#fff', fontSize: 32,
+    fontWeight: '900', lineHeight: 37, letterSpacing: -0.7,
   },
-  hero: {
-    paddingHorizontal: 20,
-    gap: 16,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 4,
-  },
-  brandLogo: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-  },
-  brandName: {
-    color: colors.text,
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.3,
-  },
-  heroTitle: {
-    color: colors.text,
-    fontSize: 46,
-    fontWeight: '900',
-    lineHeight: 52,
-    letterSpacing: -1.5,
-  },
-  heroSub: {
-    color: colors.textMuted,
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  heroActions: {
-    flexDirection: 'column',
-    gap: 12,
-    marginTop: 12,
-  },
-  btnPrimary: {
-    height: 60,
-    backgroundColor: colors.primary,
-    borderRadius: radius.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    ...shadows.button,
-  },
-  btnPrimaryText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  btnGhost: {
-    height: 54,
-    borderWidth: 1.5,
-    borderColor: colors.borderStrong,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnGhostText: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  btnPressed: {
-    opacity: 0.82,
-    transform: [{ scale: 0.98 }],
-  },
+  featSub: { color: 'rgba(255,255,255,0.58)', fontSize: 13, lineHeight: 19 },
 
-  // Stats
-  statsRow: {
-    paddingHorizontal: 20,
-    gap: 10,
-    paddingVertical: 4,
+  // Boutons - même padding = même indentation = même taille visuelle
+  featBtns: { gap: 12, marginBottom: 24, alignItems: 'flex-start' },
+  featBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    gap: 7, backgroundColor: '#fff',
+    borderRadius: radius.full, paddingHorizontal: 20, paddingVertical: 13,
   },
-  statPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.full,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+  featBtnText: { color: colors.primaryDark, fontSize: 13, fontWeight: '700' },
+  featLink: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    paddingHorizontal: 20, paddingVertical: 13,
   },
-  statTexts: { gap: 1 },
-  statValue: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '800',
+  featLinkText: { color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: '500' },
+
+  // Stats row - à l'intérieur de la section vidéo
+  featStatsRow: {
+    flexDirection: 'row', alignItems: 'center',
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: 20,
   },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 10,
-    fontWeight: '500',
-  },
+  featStatItem: { flex: 1, alignItems: 'center', gap: 3 },
+  featStatDiv: { width: 1, height: 26, backgroundColor: 'rgba(255,255,255,0.12)' },
+  featStatVal: { color: '#fff', fontSize: 17, fontWeight: '900', letterSpacing: -0.3 },
+  featStatLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 9, fontWeight: '500', textAlign: 'center' },
 
   // Carousel
-  slide: {
-    height: 260,
-    borderRadius: radius.xl,
-    overflow: 'hidden',
-    backgroundColor: colors.surfaceHigh,
-  },
-  slideGrad: {
-    justifyContent: 'flex-end',
-    padding: 20,
-    gap: 5,
-  },
-  slideTitle: { color: '#fff', fontSize: 19, fontWeight: '800', lineHeight: 24 },
-  slideSub: { color: 'rgba(255,255,255,0.82)', fontSize: 13, lineHeight: 18 },
+  sectionRow: { paddingHorizontal: 20 },
+  slide: { height: 270, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.surfaceHigh },
+  slideOverlay: { justifyContent: 'flex-end', padding: 22, gap: 5 },
+  slideTitle: { color: '#fff', fontSize: 21, fontWeight: '900', lineHeight: 26 },
+  slideSub: { color: 'rgba(255,255,255,0.78)', fontSize: 13, lineHeight: 18 },
   slideCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-    alignSelf: 'flex-start',
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    alignSelf: 'flex-start', marginTop: 6,
     backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: radius.full,
+    borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 6,
   },
   slideCtaText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 5 },
-  dot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.borderStrong },
-  dotActive: { backgroundColor: colors.primary, width: 16 },
+  slideIndicators: {
+    flexDirection: 'row', justifyContent: 'center', gap: 4,
+    paddingVertical: 10,
+  },
+  slideBar: { height: 3, width: 18, borderRadius: 2, backgroundColor: colors.borderStrong },
+  slideBarActive: { width: 28, backgroundColor: colors.primary },
 
   // Sections
-  section: {
-    paddingHorizontal: 20,
-    gap: 16,
-    marginTop: 36,
-  },
-  sectionNoH: { gap: 16, marginTop: 36 },
-  sectionPad: { paddingHorizontal: 20 },
-  sectionHead: { gap: 4 },
-  eyebrow: {
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 24,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-    flex: 1,
-  },
-  sectionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+  section: { marginTop: 44, paddingHorizontal: 20 },
+  sectionHead: {
+    flexDirection: 'row', alignItems: 'flex-end',
     justifyContent: 'space-between',
-    gap: 8,
   },
-  seeAllBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    paddingBottom: 2,
+  sectionLabel: {
+    color: colors.primary, fontSize: 10, fontWeight: '700',
+    letterSpacing: 1.6, textTransform: 'uppercase',
   },
-  seeAll: {
-    color: colors.primary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
+  sectionTitle: { color: colors.text, fontSize: 22, fontWeight: '800', letterSpacing: -0.3, marginTop: 4 },
+  seeAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  seeAllText: { color: colors.primary, fontSize: 13, fontWeight: '600' },
 
-  // Capabilities grid
-  capsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
+  // Capabilities - hauteur fixe identique pour toutes les cartes
+  capsRow: { gap: 10, paddingRight: 4 },
   capCard: {
+    width: 154, height: 148,
     backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.lg,
-    padding: 16,
-    gap: 10,
+    borderWidth: 1, borderColor: colors.border,
+    borderRadius: radius.lg, padding: 16, gap: 10,
   },
-  capIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(59,130,246,0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  capIconWrap: {
+    width: 38, height: 38, borderRadius: 10,
+    backgroundColor: 'rgba(79,142,247,0.1)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  capTitle: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  capDesc: {
-    color: colors.textMuted,
-    fontSize: 12,
-    lineHeight: 17,
-  },
+  capTitle: { color: colors.text, fontSize: 13, fontWeight: '700', lineHeight: 17 },
+  capDesc: { color: colors.textMuted, fontSize: 11, lineHeight: 16 },
 
   // Categories
-  catRow: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  catCard: {
-    width: 165,
-    height: 210,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    backgroundColor: colors.surfaceHigh,
-  },
-  catOverlay: {
-    justifyContent: 'flex-end',
-    padding: 14,
-    gap: 4,
-  },
-  catName: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '700',
-    lineHeight: 19,
-  },
-  catCount: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
-  },
+  catsRow: { gap: 10, paddingRight: 4 },
+  catCard: { width: 148, height: 200, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.surfaceHigh },
+  catOverlay: { justifyContent: 'flex-end', padding: 12, gap: 3 },
+  catName: { color: '#fff', fontSize: 13, fontWeight: '700', lineHeight: 17 },
+  catCount: { color: 'rgba(255,255,255,0.6)', fontSize: 11 },
 
-  // Final CTA
+  // CTA banner
   ctaBanner: {
-    borderRadius: radius.xl,
-    padding: 24,
-    gap: 10,
-    overflow: 'hidden',
+    borderRadius: radius.xl, overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(79,142,247,0.3)',
   },
-  ctaOrb: {
-    position: 'absolute',
-    top: -40,
-    right: -40,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+  bannerInner: { padding: 24, gap: 10 },
+  bannerLabel: {
+    color: 'rgba(255,255,255,0.5)', fontSize: 10,
+    fontWeight: '700', letterSpacing: 1.6,
   },
-  ctaEyebrow: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-  },
-  ctaTitle: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: '900',
-    lineHeight: 28,
-    letterSpacing: -0.5,
-  },
-  ctaText: {
-    color: 'rgba(255,255,255,0.75)',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  ctaBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+  bannerTitle: { color: '#fff', fontSize: 22, fontWeight: '900', lineHeight: 28, letterSpacing: -0.4 },
+  bannerSub: { color: 'rgba(255,255,255,0.6)', fontSize: 13, lineHeight: 18 },
+  bannerBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    alignSelf: 'flex-start', backgroundColor: '#fff',
     borderRadius: radius.full,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginTop: 6,
+    paddingHorizontal: 20, paddingVertical: 11, marginTop: 4,
   },
-  ctaBtnText: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
+  bannerBtnText: { color: colors.primaryDark, fontSize: 14, fontWeight: '700' },
 });

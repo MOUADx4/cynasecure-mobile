@@ -30,6 +30,7 @@
         }
       ],
       "expo-web-browser",
+      "expo-video",
       [
         "expo-splash-screen",
         {

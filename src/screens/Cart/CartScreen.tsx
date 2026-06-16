@@ -41,17 +41,22 @@ export function CartScreen() {
 
   if (items.length === 0) {
     return (
-      <View style={[styles.emptyBox, { paddingTop: insets.top }]}>
-        <View style={styles.emptyIconBg}>
-          <ShoppingCart color={colors.textDim} size={32} strokeWidth={1.5} />
+      <View style={[styles.emptyBox, { paddingTop: insets.top + 16 }]}>
+        <View style={styles.emptyGlowWrap}>
+          <View style={styles.emptyIconBg}>
+            <ShoppingCart color={colors.textDim} size={32} strokeWidth={1.5} />
+          </View>
         </View>
+        <Text style={styles.emptyEyebrow}>PANIER VIDE</Text>
         <Text style={styles.emptyTitle}>{t('cart.empty')}</Text>
         <Text style={styles.emptyText}>{t('cart.emptyHint')}</Text>
-        <Button
-          label={t('cart.exploreCatalog')}
-          onPress={() => nav.navigate('Catalog')}
-          icon={<ArrowRight color="#fff" size={16} />}
-        />
+        <Pressable
+          style={({ pressed }) => [styles.emptyBtn, pressed && { opacity: 0.82, transform: [{ scale: 0.97 }] }]}
+          onPress={() => { medium(); nav.navigate('Catalog'); }}
+        >
+          <Text style={styles.emptyBtnText}>{t('cart.exploreCatalog')}</Text>
+          <ArrowRight color="#fff" size={16} />
+        </Pressable>
       </View>
     );
   }
@@ -87,7 +92,7 @@ export function CartScreen() {
 
                 <View style={styles.cycleRow}>
                   <Pressable
-                    onPress={() => changeCycle(item.id, 'monthly')}
+                    onPress={() => { medium(); changeCycle(item.id, 'monthly'); }}
                     style={[styles.cyc, item.cycle === 'monthly' && styles.cycActive]}
                   >
                     <Text style={[styles.cycText, item.cycle === 'monthly' && styles.cycTextActive]}>
@@ -95,7 +100,7 @@ export function CartScreen() {
                     </Text>
                   </Pressable>
                   <Pressable
-                    onPress={() => changeCycle(item.id, 'yearly')}
+                    onPress={() => { medium(); changeCycle(item.id, 'yearly'); }}
                     style={[styles.cyc, item.cycle === 'yearly' && styles.cycActive]}
                   >
                     <Text style={[styles.cycText, item.cycle === 'yearly' && styles.cycTextActive]}>
@@ -266,18 +271,42 @@ const styles = StyleSheet.create({
   },
   checkoutText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 32 },
+  emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 32 },
+  emptyGlowWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
   emptyIconBg: {
-    width: 80,
-    height: 80,
+    width: 88,
+    height: 88,
     borderRadius: 24,
     backgroundColor: colors.surfaceElevated,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 0 },
   },
-  emptyTitle: { color: colors.text, fontSize: 20, fontWeight: '800' },
-  emptyText: { color: colors.textMuted, textAlign: 'center', fontSize: 13, lineHeight: 19 },
+  emptyEyebrow: { color: colors.primary, fontSize: 10, fontWeight: '700', letterSpacing: 1.8, textTransform: 'uppercase' as const },
+  emptyTitle: { color: colors.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.3 },
+  emptyText: { color: colors.textMuted, textAlign: 'center' as const, fontSize: 13, lineHeight: 20, maxWidth: 250 },
+  emptyBtn: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 22,
+    paddingVertical: 13,
+    borderRadius: radius.lg,
+    marginTop: 6,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  emptyBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });

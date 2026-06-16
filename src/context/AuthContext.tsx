@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi, type User } from '../api/auth';
 import { resetToHome } from '../navigation/navigationRef';
 
@@ -16,10 +17,53 @@ type AuthState = {
 };
 
 const AuthContext = createContext<AuthState | null>(null);
+const CACHE_KEY = '@auth_user';
+
+async function readCachedUser(): Promise<User | null> {
+  try {
+    const raw = await AsyncStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as User) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeCachedUser(u: User | null) {
+  try {
+    if (u) await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(u));
+    else await AsyncStorage.removeItem(CACHE_KEY);
+  } catch {}
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const setUser = useCallback((u: User | null) => {
+    writeCachedUser(u);
+    setUserState(u);
+  }, []);
+
+  // On mount: restore from cache immediately → show UI without waiting for /api/me
+  useEffect(() => {
+    readCachedUser().then((cached) => {
+      if (cached) {
+        setUserState(cached);
+        setLoading(false);
+      }
+      // Always validate in background
+      authApi.me()
+        .then((me) => {
+          writeCachedUser(me);
+          setUserState(me);
+        })
+        .catch(() => {
+          writeCachedUser(null);
+          setUserState(null);
+        })
+        .finally(() => setLoading(false));
+    });
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
@@ -28,11 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setUser(null);
     }
-  }, []);
-
-  useEffect(() => {
-    refresh().finally(() => setLoading(false));
-  }, [refresh]);
+  }, [setUser]);
 
   const login = async (email: string, password: string, remember = false) => {
     const res = await authApi.login(email, password, remember);
@@ -45,9 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await authApi.logout();
-    } catch {
-      // déconnexion locale même si l'API échoue
-    }
+    } catch {}
     setUser(null);
     resetToHome();
   };

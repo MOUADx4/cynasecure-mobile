@@ -2,7 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
-import { Home, Grid3x3, ShoppingCart, User, MessageCircle } from 'lucide-react-native';
+import { House, LayoutGrid, ShoppingBag, Mail, CircleUser } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
@@ -20,10 +20,7 @@ import type { TabsParams } from './types';
 
 const Tab = createBottomTabNavigator<TabsParams>();
 
-// TabButton animé avec haptique
-
 interface TabButtonProps {
-  route: { key: string; name: string };
   focused: boolean;
   icon: React.ReactNode;
   label: string;
@@ -34,16 +31,16 @@ function TabButton({ focused, icon, label, onPress }: TabButtonProps) {
   const { light } = useHaptic();
   const scale = useSharedValue(1);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   const handlePress = () => {
     light();
-    scale.value = withSpring(0.9, { damping: 20, stiffness: 400 });
+    scale.value = withSpring(0.88, { damping: 20, stiffness: 400 });
     setTimeout(() => {
-      scale.value = withSpring(1, { damping: 20, stiffness: 300 });
-    }, 100);
+      scale.value = withSpring(1, { damping: 18, stiffness: 280 });
+    }, 110);
     onPress();
   };
 
@@ -55,21 +52,19 @@ function TabButton({ focused, icon, label, onPress }: TabButtonProps) {
       accessibilityState={{ selected: focused }}
       accessibilityLabel={label}
     >
-      <Animated.View style={animatedStyle}>
-        <View style={[s.iconFrame, focused && s.iconFrameActive]}>
-          {focused && <View style={s.iconGlow} />}
-          {icon}
-        </View>
+      {/* Indicateur actif - pill en haut */}
+      <View style={[s.pill, focused && s.pillActive]} />
+
+      <Animated.View style={[s.iconWrap, animStyle]}>
+        {icon}
       </Animated.View>
+
       <Text style={[s.tabLabel, focused && s.tabLabelActive]} numberOfLines={1}>
         {label}
       </Text>
-      {focused && <Animated.View style={s.activeIndicator} />}
     </Pressable>
   );
 }
-
-// Badge panier
 
 function CartBadge({ count }: { count: number }) {
   if (count === 0) return null;
@@ -80,14 +75,12 @@ function CartBadge({ count }: { count: number }) {
   );
 }
 
-// Barre de navigation custom (style dock)
-
 function DockTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { count } = useCart();
 
   return (
-    <View style={[s.dockOuter, { paddingBottom: Math.max(insets.bottom, 8) + 6 }]}>
+    <View style={[s.dockOuter, { paddingBottom: Math.max(insets.bottom, 8) + 4 }]}>
       <View style={s.dockInner}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -104,22 +97,31 @@ function DockTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             }
           };
 
+          const activeColor   = colors.primary;
+          const inactiveColor = 'rgba(255,255,255,0.30)';
+          const color  = focused ? activeColor : inactiveColor;
+          const stroke = focused ? 2.0 : 1.6;
+          const size   = 22;
+
           const icon = (() => {
-            const color = focused ? colors.primary : colors.textDim;
-            const size = 22;
             switch (route.name) {
-              case 'Home':    return <Home    color={color} size={size} />;
-              case 'Catalog': return <Grid3x3 color={color} size={size} />;
+              case 'Home':
+                return <House color={color} size={size} strokeWidth={stroke} />;
+              case 'Catalog':
+                return <LayoutGrid color={color} size={size} strokeWidth={stroke} />;
               case 'Cart':
                 return (
                   <View>
-                    <ShoppingCart color={color} size={size} />
+                    <ShoppingBag color={color} size={size} strokeWidth={stroke} />
                     <CartBadge count={count} />
                   </View>
                 );
-              case 'Contact': return <MessageCircle color={color} size={size} />;
-              case 'Profile': return <User color={color} size={size} />;
-              default:        return null;
+              case 'Contact':
+                return <Mail color={color} size={size} strokeWidth={stroke} />;
+              case 'Profile':
+                return <CircleUser color={color} size={size} strokeWidth={stroke} />;
+              default:
+                return null;
             }
           })();
 
@@ -128,7 +130,6 @@ function DockTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
           return (
             <TabButton
               key={route.key}
-              route={route}
               focused={focused}
               icon={icon}
               label={label}
@@ -140,8 +141,6 @@ function DockTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     </View>
   );
 }
-
-// Navigator
 
 export function MainTabs() {
   const { t } = useTranslation();
@@ -160,92 +159,56 @@ export function MainTabs() {
   );
 }
 
-// Styles
-
-const ICON_FRAME_W = 54;
-const ICON_FRAME_H = 40;
-
 const s = StyleSheet.create({
-  // Wrapper en flow normal → réserve l'espace → le contenu ne passe pas dessous
   dockOuter: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 10,
     backgroundColor: colors.background,
   },
 
-  // La barre flottante visuelle — style dock macOS
   dockInner: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(18, 18, 22, 0.96)',
-    borderRadius: 28,
+    backgroundColor: 'rgba(16, 16, 20, 0.97)',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    // Ombre portée pour effet de profondeur / flottement
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    paddingHorizontal: 4,
     shadowColor: '#000',
-    shadowOpacity: 0.55,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 20,
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 18,
   },
 
-  // Un onglet
   tabItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 4,
+    paddingBottom: 8,
   },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: -4,
-    left: '50%' as unknown as number,
-    marginLeft: -2,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+
+  // Pill actif en haut du tab item
+  pill: {
+    width: 24,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: 'transparent',
+    marginBottom: 7,
+  },
+  pillActive: {
     backgroundColor: colors.primary,
   },
 
-  // Cadre autour de l'icône
-  iconFrame: {
-    width: ICON_FRAME_W,
-    height: ICON_FRAME_H,
-    borderRadius: 14,
+  iconWrap: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
 
-  // État actif : cadre cristallisé
-  iconFrameActive: {
-    backgroundColor: 'rgba(59, 130, 246, 0.13)',
-    borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.38)',
-    // Lueur bleue subtile
-    shadowColor: '#3B82F6',
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 0 },
-  },
-
-  // Halo interne (couche de brillance sur le cadre)
-  iconGlow: {
-    position: 'absolute',
-    top: 1,
-    left: 1,
-    right: 1,
-    height: '50%',
-    borderTopLeftRadius: 13,
-    borderTopRightRadius: 13,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-  },
-
-  // Label
   tabLabel: {
     fontSize: 10,
     fontWeight: '500',
-    color: colors.textDim,
-    letterSpacing: 0.2,
+    color: 'rgba(255,255,255,0.28)',
+    letterSpacing: 0.1,
   },
   tabLabelActive: {
     color: colors.primary,
@@ -259,8 +222,8 @@ const s = StyleSheet.create({
     right: -8,
     backgroundColor: colors.primary,
     borderRadius: 10,
-    minWidth: 17,
-    height: 17,
+    minWidth: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,

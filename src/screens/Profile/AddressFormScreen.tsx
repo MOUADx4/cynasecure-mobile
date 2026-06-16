@@ -82,16 +82,16 @@ export function AddressFormScreen({ navigation, route }: RootScreen<'AddressForm
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>{editId ? t('addresses.edit') : t('addresses.add')}</Text>
 
-      <Input label={`${t('addresses.firstName')} *`} value={firstName} onChangeText={setFirstName} />
-      <Input label={`${t('addresses.lastName')} *`} value={lastName} onChangeText={setLastName} />
-      <Input label={t('addresses.company')} value={company} onChangeText={setCompany} />
-      <Input label={`${t('addresses.line1')} *`} value={line1} onChangeText={setLine1} />
-      <Input label={t('addresses.line2')} value={line2} onChangeText={setLine2} />
-      <Input label={`${t('addresses.city')} *`} value={city} onChangeText={setCity} />
-      <Input label={t('addresses.region')} value={region} onChangeText={setRegion} />
-      <Input label={`${t('addresses.postalCode')} *`} value={postalCode} onChangeText={setPostalCode} keyboardType="numeric" />
+      <Input label={`${t('addresses.firstName')} *`} value={firstName} onChangeText={setFirstName} maxLength={100} />
+      <Input label={`${t('addresses.lastName')} *`} value={lastName} onChangeText={setLastName} maxLength={100} />
+      <Input label={t('addresses.company')} value={company} onChangeText={setCompany} maxLength={150} />
+      <Input label={`${t('addresses.line1')} *`} value={line1} onChangeText={setLine1} maxLength={255} />
+      <Input label={t('addresses.line2')} value={line2} onChangeText={setLine2} maxLength={255} />
+      <Input label={`${t('addresses.city')} *`} value={city} onChangeText={setCity} maxLength={100} />
+      <Input label={t('addresses.region')} value={region} onChangeText={setRegion} maxLength={100} />
+      <Input label={`${t('addresses.postalCode')} *`} value={postalCode} onChangeText={setPostalCode} keyboardType="numeric" maxLength={10} />
       <Input label={`${t('addresses.country')} *`} value={country} onChangeText={setCountry} autoCapitalize="characters" maxLength={2} />
-      <Input label={t('addresses.phone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+      <Input label={t('addresses.phone')} value={phone} onChangeText={setPhone} keyboardType="phone-pad" maxLength={20} />
 
       <Button label={t('common.save')} onPress={save} loading={loading} fullWidth />
     </ScrollView>

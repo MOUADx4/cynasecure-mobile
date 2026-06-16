@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -22,6 +21,8 @@ import {
 
 import { ordersApi, type Order } from '../../api/subscriptions';
 import { downloadInvoice } from '../../utils/downloadInvoice';
+import { useHaptic } from '../../hooks/useHaptic';
+import { Skeleton } from '../../components/ui/Skeleton';
 import { colors, radius, spacing } from '../../theme/colors';
 
 function fmt(iso: string) {
@@ -61,6 +62,7 @@ const STATUS_FILTERS = [
 ];
 
 export function MyOrdersScreen() {
+  const { light } = useHaptic();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,6 +89,7 @@ export function MyOrdersScreen() {
   };
 
   const toggleExpand = (id: number) => {
+    light();
     setExpanded(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -94,17 +97,18 @@ export function MyOrdersScreen() {
     });
   };
 
-  const filtered = statusFilter
-    ? orders.filter(o => o.status.toUpperCase() === statusFilter)
-    : orders;
-
-  const grouped: Record<number, Order[]> = {};
-  for (const o of filtered) {
-    const y = o.year ?? new Date(o.createdAt).getFullYear();
-    if (!grouped[y]) grouped[y] = [];
-    grouped[y].push(o);
-  }
-  const sortedYears = Object.keys(grouped).map(Number).sort((a, b) => b - a);
+  const { filtered, grouped, sortedYears } = useMemo(() => {
+    const f = statusFilter
+      ? orders.filter(o => o.status.toUpperCase() === statusFilter)
+      : orders;
+    const g: Record<number, Order[]> = {};
+    for (const o of f) {
+      const y = o.year ?? new Date(o.createdAt).getFullYear();
+      if (!g[y]) g[y] = [];
+      g[y].push(o);
+    }
+    return { filtered: f, grouped: g, sortedYears: Object.keys(g).map(Number).sort((a, b) => b - a) };
+  }, [orders, statusFilter]);
 
   return (
     <ScrollView
@@ -175,17 +179,29 @@ export function MyOrdersScreen() {
         </ScrollView>
       </View>
 
-      {/* Loading */}
+      {/* Skeleton loading */}
       {loading && (
-        <View style={st.loadingWrap}>
-          <ActivityIndicator color={colors.primary} />
+        <View style={{ gap: 10 }}>
+          {[0, 1, 2, 3].map(i => (
+            <View key={i} style={[st.orderCard, { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }]}>
+              <Skeleton height={36} width={36} borderRadius={radius.md} />
+              <View style={{ flex: 1, gap: 7 }}>
+                <Skeleton height={14} width="45%" />
+                <Skeleton height={11} width="65%" />
+              </View>
+              <Skeleton height={18} width={55} />
+            </View>
+          ))}
         </View>
       )}
 
       {/* Empty state */}
       {!loading && filtered.length === 0 && (
         <View style={st.empty}>
-          <ShoppingBag color={colors.textDim} size={40} strokeWidth={1.5} />
+          <View style={st.emptyIconWrap}>
+            <ShoppingBag color={colors.primary} size={26} strokeWidth={1.5} />
+          </View>
+          <Text style={st.emptyEyebrow}>HISTORIQUE</Text>
           <Text style={st.emptyTitle}>Aucune commande trouvée</Text>
           <Text style={st.emptyHint}>
             {q || year || statusFilter
@@ -333,12 +349,22 @@ const st = StyleSheet.create({
   filterChipText: { color: colors.textMuted, fontSize: 12, fontWeight: '600' },
   filterChipTextActive: { color: '#fff' },
 
-  loadingWrap: { paddingVertical: 32, alignItems: 'center' },
-
   // Empty
-  empty: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 48 },
-  emptyTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  emptyHint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
+  empty: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 40 },
+  emptyIconWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 18,
+    backgroundColor: 'rgba(79,142,247,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(79,142,247,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyEyebrow: { color: colors.primary, fontSize: 10, fontWeight: '700', letterSpacing: 1.6, textTransform: 'uppercase' as const },
+  emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },
+  emptyHint: { color: colors.textMuted, fontSize: 13, textAlign: 'center' as const, lineHeight: 19, maxWidth: 240 },
 
   // Year group
   yearGroup: { gap: 10 },

@@ -43,7 +43,7 @@ type Props = {
   onToggleRenew?: (enabled: boolean) => Promise<void>;
 };
 
-export function SubscriptionCard({ subscription: sub, onCancel, onSwitchCycle, onToggleRenew }: Props) {
+function SubscriptionCardComponent({ subscription: sub, onCancel, onSwitchCycle, onToggleRenew }: Props) {
   const nav = useNavigation<any>();
   const [toggling, setToggling] = useState(false);
   const { tone, label } = statusInfo(sub.status);
@@ -156,3 +156,5 @@ const styles = StyleSheet.create({
   on: { color: colors.success, fontWeight: '700' },
   off: { color: colors.textDim, fontWeight: '700' },
 });
+
+export const SubscriptionCard = React.memo(SubscriptionCardComponent);
