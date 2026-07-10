@@ -51,8 +51,8 @@ export function PaymentMethodsScreen() {
         setAdding(false);
         load();
       }
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setSaving(false);
     }
@@ -68,8 +68,8 @@ export function PaymentMethodsScreen() {
           try {
             await paymentMethodsApi.detach(pmId);
             load();
-          } catch (e: any) {
-            Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+          } catch (e: unknown) {
+            Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
           }
         },
       },
@@ -80,8 +80,8 @@ export function PaymentMethodsScreen() {
     try {
       await paymentMethodsApi.setDefault(pmId);
       load();
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     }
   };
 

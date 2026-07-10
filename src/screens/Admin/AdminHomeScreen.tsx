@@ -159,8 +159,8 @@ function SlideModal({
     try {
       await onSave(form);
       onClose();
-    } catch (e: any) {
-      Alert.alert('Erreur', e?.message ?? 'Impossible d\'enregistrer.');
+    } catch (e: unknown) {
+      Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? 'Impossible d\'enregistrer.');
     } finally {
       setSaving(false);
     }

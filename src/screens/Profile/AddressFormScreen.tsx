@@ -69,8 +69,8 @@ export function AddressFormScreen({ navigation, route }: RootScreen<'AddressForm
         await addressesApi.create(payload);
       }
       navigation.goBack();
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setLoading(false);
     }

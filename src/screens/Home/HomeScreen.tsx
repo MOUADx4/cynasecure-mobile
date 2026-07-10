@@ -2,12 +2,20 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Image, Pressable, ScrollView, StyleSheet, Text,
-  useWindowDimensions, View,
+  useWindowDimensions, View, type ImageSourcePropType,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { RootStackParams, TabsParams } from '../../navigation/types';
+
+type HomeNavProp = CompositeNavigationProp<
+  BottomTabNavigationProp<TabsParams, 'Home'>,
+  NativeStackNavigationProp<RootStackParams>
+>;
 import { useTranslation } from 'react-i18next';
 import Animated, {
   useSharedValue,
@@ -31,13 +39,13 @@ import { colors, radius, shadows } from '../../theme/colors';
 
 // Data
 
-const SLIDE_ENTRIES: Array<{ keywords: string[]; image: any }> = [
+const SLIDE_ENTRIES: Array<{ keywords: string[]; image: ImageSourcePropType }> = [
   { keywords: ['xdr', 'unifi', 'détect', 'detect', 'protection'], image: require('../../assets/slide_xdr.png') },
   { keywords: ['zero trust', 'trust', 'identit', 'accès', 'acces', 'vérif'], image: require('../../assets/slide_zerotrust.png') },
   { keywords: ['48', 'déploi', 'deploy', 'rapide', 'infra', 'opérationnel'], image: require('../../assets/slide_deploy48h.png') },
 ];
 
-function resolveSlideImage(slide: CarouselSlide): any | null {
+function resolveSlideImage(slide: CarouselSlide): ImageSourcePropType | null {
   const text = `${slide.title} ${slide.subtitle ?? ''}`.toLowerCase();
   for (const e of SLIDE_ENTRIES) {
     if (e.keywords.some((k) => text.includes(k))) return e.image;
@@ -45,7 +53,7 @@ function resolveSlideImage(slide: CarouselSlide): any | null {
   return null;
 }
 
-const CAT_IMAGES: Record<string, any> = {
+const CAT_IMAGES: Record<string, ImageSourcePropType> = {
   edr: require('../../assets/edr.jpg'),
   xdr: require('../../assets/xdr.jpg'),
   soc: require('../../assets/soc.jpg'),
@@ -56,7 +64,7 @@ const CAT_IMAGES: Record<string, any> = {
   support: require('../../assets/support.jpg'),
 };
 
-function resolveCatImage(cat: Category): any | null {
+function resolveCatImage(cat: Category): ImageSourcePropType | null {
   const hay = `${cat.slug ?? ''} ${cat.name ?? ''}`.toLowerCase();
   for (const key of Object.keys(CAT_IMAGES)) {
     if (hay.includes(key)) return CAT_IMAGES[key];
@@ -222,7 +230,7 @@ function FeaturedHero({
       {/* Logo + brand name - en haut dans la vidéo */}
       <View style={[s.featTopBar, { paddingTop: insetTop + 14 }]}>
         <Image source={require('../../assets/icon.png')} style={s.featLogo} resizeMode="contain" />
-        <Text style={s.featBrand}>CynaSecure</Text>
+        <Text style={s.featBrand}>Cyna<Text style={s.featBrandAccent}>Secure</Text></Text>
       </View>
 
       {/* Contenu bas : texte + CTA + stats */}
@@ -280,7 +288,7 @@ function FeaturedHero({
 
 export function HomeScreen() {
   const { t } = useTranslation();
-  const nav = useNavigation<any>();
+  const nav = useNavigation<HomeNavProp>();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
 
@@ -499,6 +507,7 @@ const s = StyleSheet.create({
   },
   featLogo: { width: 30, height: 30, borderRadius: 7 },
   featBrand: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: -0.3 },
+  featBrandAccent: { color: colors.primary },
   featBottom: { paddingHorizontal: 22, paddingBottom: 0 },
   featTextBlock: { gap: 10, marginBottom: 32 },
   featEyebrow: {

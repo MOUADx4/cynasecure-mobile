@@ -40,9 +40,9 @@ export function LoginScreen({ navigation }: RootScreen<'Login'>) {
       } else {
         navigation.replace('Tabs');
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       hapticError();
-      toast(e?.message ?? t('common.errorOccurred'), 'error');
+      toast((e instanceof Error ? e.message : null) ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
     }

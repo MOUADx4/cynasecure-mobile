@@ -23,8 +23,8 @@ export function VerifyEmailChangeScreen({ navigation, route }: RootScreen<'Verif
       await authApi.verifyEmailChange(token);
       if (isAuthenticated) await refresh();
       setStatus('success');
-    } catch (e: any) {
-      setError(e?.message ?? t('verifyEmailChange.errorText'));
+    } catch (e: unknown) {
+      setError((e instanceof Error ? e.message : null) ?? t('verifyEmailChange.errorText'));
       setStatus('error');
     }
   };

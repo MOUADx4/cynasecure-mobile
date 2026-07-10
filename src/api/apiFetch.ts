@@ -1,7 +1,5 @@
-import Constants from 'expo-constants';
-
 const baseUrl =
-  (Constants.expoConfig?.extra?.apiUrl as string) ??
+  process.env.EXPO_PUBLIC_API_URL ??
   'http://localhost:8000/api';
 
 export class ApiError extends Error {
@@ -42,7 +40,7 @@ export async function apiFetch<T>(
     credentials: 'include',
     body: opts.body
       ? opts.body instanceof FormData
-        ? (opts.body as any)
+        ? opts.body
         : JSON.stringify(opts.body)
       : undefined,
   });
@@ -54,7 +52,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const message =
-      (data && typeof data === 'object' && 'message' in data && (data as any).message) ||
+      (data && typeof data === 'object' && 'message' in data && (data as Record<string, unknown>).message) ||
       `Erreur ${res.status}`;
     throw new ApiError(message, res.status, data);
   }

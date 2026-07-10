@@ -22,15 +22,21 @@ import {
   Shield,
   XCircle,
 } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NavigationProp } from '@react-navigation/native';
+import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
 import { subscriptionsApi, type Subscription } from '../../api/subscriptions';
 import { useToast } from '../../hooks/useToast';
 import { useHaptic } from '../../hooks/useHaptic';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { colors, radius, spacing } from '../../theme/colors';
-import type { RootStackParams } from '../../navigation/types';
+import type { RootStackParams, TabsParams } from '../../navigation/types';
+
+type SubscriptionsNavProp = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParams>,
+  BottomTabNavigationProp<TabsParams>
+>;
 
 function fmt(iso?: string | null) {
   if (!iso) return '—';
@@ -85,7 +91,7 @@ function InfoRow({
 export function MySubscriptionsScreen() {
   const { toast } = useToast();
   const { light, medium, success: hapticSuccess, error: hapticError } = useHaptic();
-  const nav = useNavigation<NavigationProp<RootStackParams>>();
+  const nav = useNavigation<SubscriptionsNavProp>();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -125,9 +131,9 @@ export function MySubscriptionsScreen() {
               ));
               hapticSuccess();
               toast('Abonnement annulé. Accès conservé jusqu\'à la fin de la période.', 'success');
-            } catch (e: any) {
+            } catch (e: unknown) {
               hapticError();
-              toast(e?.message ?? 'Erreur lors de l\'annulation', 'error');
+              toast((e instanceof Error ? e.message : null) ?? 'Erreur lors de l\'annulation', 'error');
             } finally {
               setCancelling(null);
             }
@@ -147,9 +153,9 @@ export function MySubscriptionsScreen() {
       ));
       hapticSuccess();
       toast('Abonnement réactivé avec succès.', 'success');
-    } catch (e: any) {
+    } catch (e: unknown) {
       hapticError();
-      toast(e?.message ?? 'Erreur lors de la réactivation', 'error');
+      toast((e instanceof Error ? e.message : null) ?? 'Erreur lors de la réactivation', 'error');
     } finally {
       setRenewing(null);
     }
@@ -175,9 +181,9 @@ export function MySubscriptionsScreen() {
               ));
               hapticSuccess();
               toast(`Formule mise à jour : ${label}.`, 'success');
-            } catch (e: any) {
+            } catch (e: unknown) {
               hapticError();
-              toast(e?.message ?? 'Erreur lors du changement', 'error');
+              toast((e instanceof Error ? e.message : null) ?? 'Erreur lors du changement', 'error');
             } finally {
               setUpgrading(null);
             }
@@ -194,9 +200,9 @@ export function MySubscriptionsScreen() {
       await subscriptionsApi.toggleAutoRenew(sub.id, !sub.autoRenew);
       setSubs(prev => prev.map(s => s.id === sub.id ? { ...s, autoRenew: !s.autoRenew } : s));
       toast(sub.autoRenew ? 'Renouvellement automatique désactivé.' : 'Renouvellement automatique activé.', 'success');
-    } catch (e: any) {
+    } catch (e: unknown) {
       hapticError();
-      toast(e?.message ?? 'Erreur', 'error');
+      toast((e instanceof Error ? e.message : null) ?? 'Erreur', 'error');
     } finally {
       setTogglingAutoRenew(null);
     }
@@ -294,7 +300,7 @@ export function MySubscriptionsScreen() {
           <Text style={st.emptyHint}>Protégez votre infrastructure avec nos solutions de cybersécurité managées.</Text>
           <Pressable
             style={({ pressed }) => [st.emptyBtn, pressed && { opacity: 0.8 }]}
-            onPress={() => (nav as any).navigate('Catalog')}
+            onPress={() => nav.navigate('Catalog')}
           >
             <Text style={st.emptyBtnText}>Explorer le catalogue</Text>
             <ArrowRight color="#fff" size={14} />

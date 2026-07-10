@@ -49,8 +49,8 @@ export function SecurityScreen() {
       await authApi.changePassword({ currentPassword: currentPwd, newPassword: newPwd });
       Alert.alert(t('security.passwordUpdated'));
       setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setPwdLoading(false);
     }
@@ -63,8 +63,8 @@ export function SecurityScreen() {
       setTwoFASecret(secret);
       setTwoFAQrContent(qrContent);
       setTwoFAState('setup');
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setTwoFALoading(false);
     }
@@ -79,8 +79,8 @@ export function SecurityScreen() {
       setTwoFAState('idle');
       setTwoFACode('');
       await refresh();
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setTwoFALoading(false);
     }
@@ -95,8 +95,8 @@ export function SecurityScreen() {
       setTwoFAState('idle');
       setDisablePwd(''); setDisableCode('');
       await refresh();
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setTwoFALoading(false);
     }
@@ -109,8 +109,8 @@ export function SecurityScreen() {
       await authApi.requestEmailChange(emailPwd, newEmail.trim());
       Alert.alert(t('security.emailChangeSent'));
       setEmailPwd(''); setNewEmail('');
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setEmailLoading(false);
     }

@@ -24,8 +24,8 @@ export function VerifyEmailScreen({ navigation, route }: RootScreen<'VerifyEmail
       Alert.alert(t('auth.verifyEmailSuccess'), '', [
         { text: 'OK', onPress: () => navigation.replace('Login') },
       ]);
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setLoading(false);
     }
@@ -36,8 +36,8 @@ export function VerifyEmailScreen({ navigation, route }: RootScreen<'VerifyEmail
     try {
       await authApi.resendVerification(email);
       Alert.alert('E-mail renvoyé', 'Vérifiez votre boîte de réception.');
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setResending(false);
     }

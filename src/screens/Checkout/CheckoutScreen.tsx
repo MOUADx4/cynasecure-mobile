@@ -136,9 +136,9 @@ export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
       clearCart();
       hapticSuccess();
       setStep('confirmation');
-    } catch (e: any) {
+    } catch (e: unknown) {
       hapticError();
-      toast(e?.message ?? t('common.errorOccurred'), 'error');
+      toast((e instanceof Error ? e.message : null) ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
     }
@@ -179,9 +179,9 @@ export function CheckoutScreen({ navigation }: RootScreen<'Checkout'>) {
       clearCart();
       hapticSuccess();
       setStep('confirmation');
-    } catch (e: any) {
+    } catch (e: unknown) {
       hapticError();
-      toast(e?.message ?? t('common.errorOccurred'), 'error');
+      toast((e instanceof Error ? e.message : null) ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
     }

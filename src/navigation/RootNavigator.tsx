@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, type NavigationState } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ChatbotFAB } from '../components/ui/ChatbotFAB';
 
@@ -55,7 +55,7 @@ import type { RootStackParams } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParams>();
 
-function getActiveTabName(state: any): string | null {
+function getActiveTabName(state: NavigationState | undefined): string | null {
   if (!state) return null;
   const top = state.routes[state.index];
   if (top.name !== 'Tabs') return top.name;
@@ -110,7 +110,7 @@ export function RootNavigator() {
   if (onboardingDone === null) return null;
   if (!onboardingDone) return <OnboardingScreen onComplete={handleOnboardingComplete} />;
 
-  const handleStateChange = (state: any) => {
+  const handleStateChange = (state: NavigationState | undefined) => {
     const name = getActiveTabName(state);
     setShowChatbot(name === 'Home' || name === 'Contact');
   };

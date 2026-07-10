@@ -91,8 +91,8 @@ function ContactForm({ userEmail }: { userEmail?: string }) {
       await contactApi.send({ email: email.trim(), subject, message: message.trim() });
       toast('Message envoyé. Nous vous répondrons sous 4h ouvrées.', 'success');
       setMessage('');
-    } catch (e: any) {
-      toast(e?.message ?? 'Impossible d\'envoyer le message.', 'error');
+    } catch (e: unknown) {
+      toast((e instanceof Error ? e.message : null) ?? 'Impossible d\'envoyer le message.', 'error');
     } finally {
       setLoading(false);
     }

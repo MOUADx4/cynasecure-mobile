@@ -52,7 +52,7 @@ export async function downloadInvoice(paymentId: number, invoiceNumber?: string 
     } else {
       Alert.alert('Téléchargé', `Facture enregistrée : ${filename}`);
     }
-  } catch (e: any) {
-    Alert.alert('Erreur', e?.message ?? 'Impossible de télécharger la facture.');
+  } catch (e: unknown) {
+    Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? 'Impossible de télécharger la facture.');
   }
 }

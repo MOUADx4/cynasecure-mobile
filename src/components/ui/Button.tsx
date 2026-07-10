@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, shadows } from '../../theme/colors';
 
@@ -147,7 +147,7 @@ const sizeStyles: Record<Size, { container: { height: number; paddingHorizontal:
   lg: { container: { height: 54, paddingHorizontal: 26 }, label: { fontSize: 15 } },
 };
 
-const variantStyles: Record<Exclude<Variant, 'primary'>, { container: any; label: { color: string } }> = {
+const variantStyles: Record<Exclude<Variant, 'primary'>, { container: ViewStyle; label: { color: string } }> = {
   secondary: {
     container: { backgroundColor: colors.surfaceElevated, borderWidth: 1, borderColor: colors.borderStrong },
     label: { color: colors.text },

@@ -34,7 +34,7 @@
 Cynasecure Mobile reprend l'intégralité des parcours du site web : catalogue, recherche, souscription d'abonnement, paiement, gestion du compte et back-office administrateur. Aucune logique métier n'est dupliquée : l'application est un client de l'API REST Symfony, au même titre que le site web.
 
 <p align="center">
-  <img src="captures_mobile/home.png" width="260" alt="Accueil" />
+  <img src="Captures_mobile/home.png" width="260" alt="Accueil" />
 </p>
 
 ---
@@ -199,22 +199,22 @@ mobile/
 ## Captures d'écran
 
 <p align="center">
-  <img src="captures_mobile/home.png" width="220" alt="Accueil" />
-  <img src="captures_mobile/catalogue.png" width="220" alt="Catalogue" />
-  <img src="captures_mobile/service_details.png" width="220" alt="Fiche service" />
-  <img src="captures_mobile/cart.png" width="220" alt="Panier" />
+  <img src="Captures_mobile/home.png" width="220" alt="Accueil" />
+  <img src="Captures_mobile/catalogue.png" width="220" alt="Catalogue" />
+  <img src="Captures_mobile/service_details.png" width="220" alt="Fiche service" />
+  <img src="Captures_mobile/cart.png" width="220" alt="Panier" />
 </p>
 
 <p align="center">
-  <img src="captures_mobile/checkout.png" width="220" alt="Checkout" />
-  <img src="captures_mobile/dash_user.png" width="220" alt="Dashboard utilisateur" />
-  <img src="captures_mobile/profil.png" width="220" alt="Profil" />
-  <img src="captures_mobile/contact.png" width="220" alt="Contact" />
+  <img src="Captures_mobile/checkout.png" width="220" alt="Checkout" />
+  <img src="Captures_mobile/dash_user.png" width="220" alt="Dashboard utilisateur" />
+  <img src="Captures_mobile/profil.png" width="220" alt="Profil" />
+  <img src="Captures_mobile/contact.png" width="220" alt="Contact" />
 </p>
 
 <p align="center">
-  <img src="captures_mobile/chatbot.png" width="220" alt="Chatbot" />
-  <img src="captures_mobile/dash_admin.png" width="220" alt="Dashboard admin" />
+  <img src="Captures_mobile/chatbot.png" width="220" alt="Chatbot" />
+  <img src="Captures_mobile/dash_admin.png" width="220" alt="Dashboard admin" />
 </p>
 
 ---

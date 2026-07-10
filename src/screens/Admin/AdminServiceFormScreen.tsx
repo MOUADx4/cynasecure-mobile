@@ -71,7 +71,7 @@ export function AdminServiceFormScreen({ route, navigation }: RootScreen<'AdminS
       .finally(() => setLoadingService(false));
   }, [id]);
 
-  const set = (key: keyof typeof EMPTY, value: any) =>
+  const set = (key: keyof typeof EMPTY, value: (typeof EMPTY)[keyof typeof EMPTY]) =>
     setForm(f => ({ ...f, [key]: value }));
 
   // Features helpers
@@ -134,8 +134,8 @@ export function AdminServiceFormScreen({ route, navigation }: RootScreen<'AdminS
       }
 
       navigation.goBack();
-    } catch (e: any) {
-      Alert.alert('Erreur', e?.message ?? 'Une erreur est survenue.');
+    } catch (e: unknown) {
+      Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? 'Une erreur est survenue.');
     } finally {
       setSaving(false);
     }

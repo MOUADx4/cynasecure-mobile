@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, type ViewStyle, type TextStyle } from 'react-native';
 import { colors, radius } from '../../theme/colors';
 
 type Tone = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const tones: Record<Tone, { box: any; text: any }> = {
+const tones: Record<Tone, { box: ViewStyle; text: TextStyle }> = {
   default: {
     box: { backgroundColor: colors.surfaceElevated, borderColor: colors.borderStrong },
     text: { color: colors.textMuted },

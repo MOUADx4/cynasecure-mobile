@@ -22,8 +22,8 @@ export function ForgotPasswordScreen({ navigation }: RootScreen<'ForgotPassword'
       await authApi.forgotPassword(email.trim());
       toast(t('auth.forgotSuccess'), 'success');
       navigation.goBack();
-    } catch (e: any) {
-      toast(e?.message ?? t('common.errorOccurred'), 'error');
+    } catch (e: unknown) {
+      toast((e instanceof Error ? e.message : null) ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
     }

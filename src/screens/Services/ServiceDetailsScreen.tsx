@@ -49,7 +49,7 @@ export function ServiceDetailsScreen({ route, navigation }: RootScreen<'ServiceD
 
   const handleAdd = () => {
     if (inCart) {
-      navigation.navigate('Tabs', { screen: 'Cart' } as any);
+      navigation.navigate('Tabs', { screen: 'Cart' });
       return;
     }
     addToCart({

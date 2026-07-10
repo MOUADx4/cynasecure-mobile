@@ -19,6 +19,7 @@ import {
   XCircle,
 } from 'lucide-react-native';
 import { BarChart, PieChart } from 'react-native-gifted-charts';
+import type { pieDataItem } from 'gifted-charts-core';
 
 import { adminApi, type AdminStats, type AdminSubscription } from '../../api/admin';
 import { adminStatsApi, type ChartData } from '../../api/adminStats';
@@ -224,7 +225,7 @@ function CategoryPieChart({ data }: { data: ChartData['categoryDistribution'] })
             radius={90}
             innerRadius={56}
             innerCircleColor={colors.surface}
-            onPress={(_item: any, index: number) =>
+            onPress={(_item: pieDataItem, index: number) =>
               setFocused(focused === index ? null : index)
             }
             centerLabelComponent={() => (

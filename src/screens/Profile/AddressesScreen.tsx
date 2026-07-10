@@ -36,8 +36,8 @@ export function AddressesScreen() {
           try {
             await addressesApi.remove(id);
             load();
-          } catch (e: any) {
-            Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+          } catch (e: unknown) {
+            Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
           }
         },
       },
@@ -48,8 +48,8 @@ export function AddressesScreen() {
     try {
       await addressesApi.setDefault(id);
       load();
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? '');
     }
   };
 

@@ -103,8 +103,8 @@ export function AdminContactScreen() {
       setReplyId(null);
       setReplyText('');
       load(page);
-    } catch (e: any) {
-      Alert.alert('Erreur', e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? '');
     } finally {
       setReplying(false);
     }
@@ -114,8 +114,8 @@ export function AdminContactScreen() {
     try {
       await adminApi.updateContactStatus(id, 'resolved');
       load(page);
-    } catch (e: any) {
-      Alert.alert('Erreur', e?.message ?? '');
+    } catch (e: unknown) {
+      Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? '');
     }
   };
 

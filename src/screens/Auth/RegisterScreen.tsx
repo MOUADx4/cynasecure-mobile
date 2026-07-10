@@ -55,8 +55,8 @@ export function RegisterScreen({ navigation }: RootScreen<'Register'>) {
         toast(t('auth.registerSuccess'), 'success');
         navigation.replace('Login');
       }
-    } catch (e: any) {
-      toast(e?.message ?? t('common.errorOccurred'), 'error');
+    } catch (e: unknown) {
+      toast((e instanceof Error ? e.message : null) ?? t('common.errorOccurred'), 'error');
     } finally {
       setLoading(false);
     }

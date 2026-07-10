@@ -66,8 +66,8 @@ export function AdminUsersScreen() {
           try {
             await adminApi.deleteUser(id);
             load(page);
-          } catch (e: any) {
-            Alert.alert('Erreur', e?.message ?? '');
+          } catch (e: unknown) {
+            Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? '');
           }
         },
       },

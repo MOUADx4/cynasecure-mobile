@@ -122,8 +122,8 @@ export function AdminPromosScreen() {
       }
       setModalVisible(false);
       load(page);
-    } catch (e: any) {
-      Alert.alert('Erreur', e?.message ?? 'Une erreur est survenue.');
+    } catch (e: unknown) {
+      Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? 'Une erreur est survenue.');
     } finally {
       setSaving(false);
     }
@@ -139,8 +139,8 @@ export function AdminPromosScreen() {
           try {
             await adminApi.deletePromo(promo.id);
             load(page);
-          } catch (e: any) {
-            Alert.alert('Erreur', e?.message ?? '');
+          } catch (e: unknown) {
+            Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? '');
           }
         },
       },

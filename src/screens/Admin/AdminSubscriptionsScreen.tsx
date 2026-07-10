@@ -217,8 +217,8 @@ export function AdminSubscriptionsScreen() {
             try {
               await adminApi.cancelSubscription(id);
               load(page);
-            } catch (e: any) {
-              Alert.alert('Erreur', e?.message ?? 'Une erreur est survenue.');
+            } catch (e: unknown) {
+              Alert.alert('Erreur', (e instanceof Error ? e.message : null) ?? 'Une erreur est survenue.');
             }
           },
         },

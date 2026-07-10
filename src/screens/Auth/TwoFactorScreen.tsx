@@ -24,8 +24,8 @@ export function TwoFactorScreen({ navigation }: RootScreen<'TwoFactor'>) {
       const user = await authApi.verifyTotp(trimmed);
       setUser(user);
       navigation.replace('Tabs');
-    } catch (e: any) {
-      Alert.alert(t('common.errorOccurred'), e?.message ?? 'Code invalide');
+    } catch (e: unknown) {
+      Alert.alert(t('common.errorOccurred'), (e instanceof Error ? e.message : null) ?? 'Code invalide');
       setCode('');
     } finally {
       setLoading(false);
