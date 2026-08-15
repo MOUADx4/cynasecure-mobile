@@ -24,7 +24,10 @@ import { Image, Text, View } from 'react-native';
 import { colors } from './src/theme/colors';
 import { jakartaFamily } from './src/theme/fonts';
 
-const stripeKey = (Constants.expoConfig?.extra?.stripePublishableKey as string) ?? '';
+const stripeKey =
+  process.env.EXPO_PUBLIC_STRIPE_KEY ??
+  (Constants.expoConfig?.extra?.stripePublishableKey as string) ??
+  '';
 
 let _fontPatched = false;
 function patchTextFont() {

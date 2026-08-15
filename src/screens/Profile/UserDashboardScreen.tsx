@@ -178,7 +178,7 @@ export function UserDashboardScreen({ navigation }: RootScreen<'UserDashboard'>)
         </View>
       </View>
 
-      {/* KPI 2×2 grid */}
+      {/* KPI 2x2 grid */}
       <View style={st.kpiGrid}>
         <KpiCard
           icon={<Shield color={colors.primary} size={18} />}
@@ -196,7 +196,7 @@ export function UserDashboardScreen({ navigation }: RootScreen<'UserDashboard'>)
         <KpiCard
           icon={<Calendar color="#8B5CF6" size={18} />}
           label="Prochain paiement"
-          value={nextPayment?.nextBillingAt ? fmt(nextPayment.nextBillingAt) : '—'}
+          value={nextPayment?.nextBillingAt ? fmt(nextPayment.nextBillingAt) : '-'}
           accentColor="#8B5CF6"
         />
         <KpiCard
@@ -328,7 +328,7 @@ export function UserDashboardScreen({ navigation }: RootScreen<'UserDashboard'>)
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={st.payAmount}>{p.amount} €</Text>
-                  <Text style={st.payDate}>{p.paidAt ? fmt(p.paidAt) : '—'}</Text>
+                  <Text style={st.payDate}>{p.paidAt ? fmt(p.paidAt) : '-'}</Text>
                 </View>
                 <StatusBadge status={p.status} />
               </View>

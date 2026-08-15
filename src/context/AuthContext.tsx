@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserState(u);
   }, []);
 
-  // On mount: restore from cache immediately → show UI without waiting for /api/me
+  // On mount: restore from cache immediately -> show UI without waiting for /api/me
   useEffect(() => {
     readCachedUser().then((cached) => {
       if (cached) {

@@ -27,7 +27,7 @@ import { checkoutApi } from '../../api/checkout';
 import { colors, radius, spacing } from '../../theme/colors';
 
 function fmt(iso?: string | null) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   try {
     return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   } catch {
@@ -36,7 +36,7 @@ function fmt(iso?: string | null) {
 }
 
 function fmtShort(iso?: string | null) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   try {
     return new Date(iso).toLocaleDateString('fr-FR');
   } catch {
@@ -187,7 +187,7 @@ export function AdminSubscriptionsScreen() {
           }, {});
           const topCycle = Object.keys(cycles).length
             ? Object.entries(cycles).sort((a, b) => b[1] - a[1])[0][0]
-            : '—';
+            : '-';
           setStats({ active, expired, mrr, cycle: topCycle });
         }
       })
@@ -240,7 +240,7 @@ export function AdminSubscriptionsScreen() {
         </Text>
       </View>
 
-      {/* Stat cards 2×2 */}
+      {/* Stat cards 2x2 */}
       {stats && (
         <View style={st.statsGrid}>
           <StatCard label="Actifs" value={stats.active} icon={CheckCircle} />
@@ -343,7 +343,7 @@ const st = StyleSheet.create({
   pageTitle: { color: colors.text, fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
   pageDesc: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
 
-  // Stats grid 2×2
+  // Stats grid 2x2
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: {
     flex: 1,

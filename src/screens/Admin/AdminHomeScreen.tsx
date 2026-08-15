@@ -183,10 +183,10 @@ function SlideModal({
 
             <View style={styles.row}>
               <View style={{ flex: 1 }}>
-                <Input label="Bouton — texte" value={form.ctaLabel} onChangeText={(v) => set('ctaLabel', v)} maxLength={60} />
+                <Input label="Bouton - texte" value={form.ctaLabel} onChangeText={(v) => set('ctaLabel', v)} maxLength={60} />
               </View>
               <View style={{ flex: 1 }}>
-                <Input label="Bouton — lien" value={form.ctaUrl} onChangeText={(v) => set('ctaUrl', v)} maxLength={255} autoCapitalize="none" />
+                <Input label="Bouton - lien" value={form.ctaUrl} onChangeText={(v) => set('ctaUrl', v)} maxLength={255} autoCapitalize="none" />
               </View>
             </View>
 
@@ -267,7 +267,7 @@ function CarouselSection({ onToast }: { onToast: (m: string, ok: boolean) => voi
   };
 
   return (
-    <Section icon={LayoutList} title="Carrousel" subtitle="SECTION 1 — HERO" defaultOpen>
+    <Section icon={LayoutList} title="Carrousel" subtitle="SECTION 1 - HERO" defaultOpen>
       {loading ? (
         <ActivityIndicator color={colors.primary} />
       ) : (
@@ -340,7 +340,7 @@ function ContentSection({ onToast }: { onToast: (m: string, ok: boolean) => void
   };
 
   return (
-    <Section icon={FileText} title="Texte d'introduction" subtitle="SECTION 2 — HÉRO INTRO">
+    <Section icon={FileText} title="Texte d'introduction" subtitle="SECTION 2 - HÉRO INTRO">
       {loading ? (
         <ActivityIndicator color={colors.primary} />
       ) : (
@@ -414,7 +414,7 @@ function CategoriesSection({ onToast }: { onToast: (m: string, ok: boolean) => v
   };
 
   return (
-    <Section icon={Grid3x3} title="Catégories affichées" subtitle="SECTION 3 — GRILLE DOMAINES">
+    <Section icon={Grid3x3} title="Catégories affichées" subtitle="SECTION 3 - GRILLE DOMAINES">
       {loading ? (
         <ActivityIndicator color={colors.primary} />
       ) : (
@@ -438,7 +438,7 @@ function CategoriesSection({ onToast }: { onToast: (m: string, ok: boolean) => v
           {/* Not in home */}
           {notInHome.length > 0 && (
             <View>
-              <Text style={styles.subLabel}>AUTRES — appuyer pour ajouter</Text>
+              <Text style={styles.subLabel}>AUTRES - appuyer pour ajouter</Text>
               <View style={styles.chips}>
                 {notInHome.map((cat) => (
                   <Pressable key={cat.id} style={styles.chipAdd} onPress={() => add(cat)}>
@@ -503,7 +503,7 @@ function TopProductsSection({ onToast }: { onToast: (m: string, ok: boolean) => 
   };
 
   return (
-    <Section icon={Star} title="Solutions mises en avant" subtitle="SECTION 4 — TOP PRODUITS">
+    <Section icon={Star} title="Solutions mises en avant" subtitle="SECTION 4 - TOP PRODUITS">
       {loading ? (
         <ActivityIndicator color={colors.primary} />
       ) : (
@@ -532,7 +532,7 @@ function TopProductsSection({ onToast }: { onToast: (m: string, ok: boolean) => 
           {/* Not in top */}
           {notInTop.length > 0 && (
             <View>
-              <Text style={styles.subLabel}>AUTRES SERVICES — appuyer pour ajouter</Text>
+              <Text style={styles.subLabel}>AUTRES SERVICES - appuyer pour ajouter</Text>
               <View style={styles.chips}>
                 {notInTop.map((svc) => (
                   <Pressable key={svc.id} style={styles.chipAdd} onPress={() => add(svc)}>

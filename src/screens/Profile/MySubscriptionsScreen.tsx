@@ -39,7 +39,7 @@ type SubscriptionsNavProp = CompositeNavigationProp<
 >;
 
 function fmt(iso?: string | null) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   try {
     return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   } catch { return iso; }
@@ -163,7 +163,7 @@ export function MySubscriptionsScreen() {
 
   const handleUpgrade = (sub: Subscription) => {
     const next = sub.cycle === 'monthly' ? 'yearly' : 'monthly';
-    const label = next === 'yearly' ? 'annuelle (−17%)' : 'mensuelle';
+    const label = next === 'yearly' ? 'annuelle (-17%)' : 'mensuelle';
     Alert.alert(
       'Changer de formule',
       `Passer à la formule ${label} ?`,

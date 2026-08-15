@@ -11,7 +11,7 @@ import { colors } from '../../theme/colors';
 import { downloadInvoice } from '../../utils/downloadInvoice';
 
 function fmt(iso?: string) {
-  if (!iso) return '—';
+  if (!iso) return '-';
   try { return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }); }
   catch { return iso; }
 }

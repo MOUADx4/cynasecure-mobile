@@ -327,7 +327,7 @@ export function AdminDashboardScreen({ navigation }: RootScreen<'AdminDashboard'
         <Text style={st.pageTitle}>Tableau de bord</Text>
       </View>
 
-      {/* KPI 2×2 */}
+      {/* KPI 2x2 */}
       <View style={st.kpiGrid}>
         <KpiCard
           icon={<Package color="#8B5CF6" size={17} />}

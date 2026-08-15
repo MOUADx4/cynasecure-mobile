@@ -41,7 +41,7 @@ function fmtShort(iso: string) {
 }
 
 function userName(p: AdminPayment) {
-  if (!p.user) return '—';
+  if (!p.user) return '-';
   if (p.user.displayName) return p.user.displayName;
   if (p.user.firstName || p.user.lastName) return `${p.user.firstName ?? ''} ${p.user.lastName ?? ''}`.trim();
   return p.user.email;
@@ -173,7 +173,7 @@ export function AdminPaymentsScreen() {
           const failed = data.items.filter(x => x.status.toUpperCase() === 'FAILED').length;
           const pending = data.items.filter(x => x.status.toUpperCase() === 'PENDING').length;
           const firstDate = data.items[0]?.paidAt ?? data.items[0]?.createdAt;
-          setStats({ totalPaid, failed, pending, lastPayment: firstDate ? fmtShort(firstDate) : '—' });
+          setStats({ totalPaid, failed, pending, lastPayment: firstDate ? fmtShort(firstDate) : '-' });
         }
       })
       .catch(() => {})
@@ -342,7 +342,7 @@ const st = StyleSheet.create({
   pageTitle: { color: colors.text, fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
   pageDesc: { color: colors.textMuted, fontSize: 13, lineHeight: 20 },
 
-  // Stats grid 2×2
+  // Stats grid 2x2
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   statCard: {
     flex: 1,

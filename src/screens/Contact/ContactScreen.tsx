@@ -59,7 +59,7 @@ function statusTextStyle(status: string) {
 const INFO_CARDS = [
   { icon: Mail,    label: 'Email',      value: 'support@cynasecure.com', note: 'Réponse sous 4h ouvrées', color: '#4F8EF7', bg: 'rgba(79,142,247,0.1)' },
   { icon: Shield,  label: 'Sécurité',   value: 'security@cynasecure.com', note: 'Assistance 24/7',         color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
-  { icon: Phone,   label: 'Téléphone',  value: '+33 1 XX XX XX XX',       note: 'Lun–Ven, 9h–18h',         color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
+  { icon: Phone,   label: 'Téléphone',  value: '+33 1 XX XX XX XX',       note: 'Lun-Ven, 9h-18h',         color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
   { icon: MapPin,  label: 'Adresse',    value: 'Paris, France',            note: 'Siège social',             color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
 ];
 

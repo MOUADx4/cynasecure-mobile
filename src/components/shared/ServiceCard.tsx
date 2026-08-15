@@ -57,7 +57,7 @@ function ServiceCardComponent({ service, onPress }: Props) {
       {/* Body */}
       <View style={styles.body}>
         <View style={styles.categoryRow}>
-          <Badge label={service.category?.toUpperCase() ?? '—'} tone="primary" />
+          <Badge label={service.category?.toUpperCase() ?? '-'} tone="primary" />
           {unavailable && <Badge label={t('service.unavailable')} tone="warning" />}
         </View>
 
